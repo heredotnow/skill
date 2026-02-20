@@ -4,9 +4,6 @@ description: >
   Publish files and folders to the web instantly. Use when asked to "publish this",
   "host this", "deploy this", "share this on the web", "make a website", or
   "put this online". Outputs a live URL at <slug>.here.now.
-metadata:
-  author: heredotnow
-  version: "1.2"
 ---
 
 # here.now

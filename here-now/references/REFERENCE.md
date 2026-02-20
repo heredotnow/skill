@@ -316,7 +316,7 @@ GET /api/skill/version
 {
   "version": "1.2",
   "changelog": "Added skill version checking and manual curl install path",
-  "updateCommand": "npx skills add heredotnow/skill",
+  "updateCommand": "npx skills add https://github.com/heredotnow/skill --skill here-now",
   "manualUpdate": "curl -s https://here.now/skill.md",
   "docsUrl": "https://here.now/docs"
 }
