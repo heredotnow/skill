@@ -68,6 +68,22 @@ Before publishing, check this file. If the user already has a publish for the sa
 | Rate limit     | 5 / hour / IP      | Unlimited                    |
 | Account needed | No                 | Yes — get key at here.now    |
 
+## Getting an API key
+
+To upgrade from anonymous (24h) to permanent publishing:
+
+1. Ask the user for their email address.
+2. Call the sign-up endpoint to send them a magic link:
+
+```bash
+curl -sS https://here.now/api/auth/login \
+  -H "content-type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+3. Tell the user: "Check your inbox for a sign-in link from here.now. Click it, then copy your API key from the dashboard."
+4. Once the user provides the key, pass it with `--api-key` or set `$HN_API_KEY`.
+
 ## Script options
 
 | Flag                   | Description                                  |

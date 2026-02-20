@@ -6,8 +6,32 @@ Base URL: `https://here.now`
 
 Two modes:
 
-- **Authenticated**: include `Authorization: Bearer <API_KEY>` header. Get your key at https://here.now (sign in → dashboard → API key tab).
+- **Authenticated**: include `Authorization: Bearer <API_KEY>` header.
 - **Anonymous**: omit the header entirely. Publishes expire in 24 hours with lower limits.
+
+### Getting an API key (agent-assisted sign-up)
+
+Agents can trigger the sign-up flow on behalf of the user:
+
+**1. Send magic link:**
+
+```bash
+curl -sS https://here.now/api/auth/login \
+  -H "content-type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+Response: `{"success": true}`
+
+No account needed beforehand — if the email is new, an account is created automatically when the user clicks the link.
+
+**2. User clicks the link in their email** — they land on the here.now dashboard, signed in.
+
+**3. User copies their API key** from the dashboard (API key tab) and provides it to the agent.
+
+The agent cannot retrieve the API key programmatically (it requires a browser session). The user must copy it manually.
+
+The login endpoint also accepts an optional `returnTo` field (a path like `"/"`), which controls where the user lands after clicking the magic link.
 
 ## Endpoints
 
