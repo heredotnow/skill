@@ -91,11 +91,12 @@ Creates a new publish with a random slug. Works with or without authentication.
   "claimToken": "abc123...",
   "claimUrl": "https://here.now/claim?slug=bright-canvas-a7k2&token=abc123...",
   "expiresAt": "2026-02-19T01:00:00.000Z",
-  "anonymous": true
+  "anonymous": true,
+  "warning": "IMPORTANT: Save the claimToken and claimUrl. They are returned only once and cannot be recovered. Share the claimUrl with the user so they can keep the site permanently."
 }
 ```
 
-The `claimToken` is returned once and cannot be recovered. Save it.
+**IMPORTANT: The `claimToken` and `claimUrl` are returned only once and cannot be recovered. Always save the `claimToken` and share the `claimUrl` with the user so they can claim the site and keep it permanently. If you lose the claim token, the site will expire in 24 hours with no way to save it.**
 
 ---
 
