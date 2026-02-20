@@ -303,28 +303,6 @@ Asset paths work naturally from the subdomain root:
 
 Direct file paths always work: `https://<slug>.here.now/report.pdf`
 
-## Skill version
-
-Check the current skill version:
-
-```
-GET /api/skill/version
-```
-
-**Response:**
-
-```json
-{
-  "version": "1.2",
-  "changelog": "Added skill version checking and manual curl install path",
-  "updateCommand": "npx skills add https://github.com/heredotnow/skill --skill here-now",
-  "manualUpdate": "curl -s https://here.now/skill.md",
-  "docsUrl": "https://here.now/docs"
-}
-```
-
-Agents should check this endpoint on first use and inform the user if a newer version is available.
-
 ## Limits
 
 |                | Anonymous          | Authenticated                |

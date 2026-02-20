@@ -8,11 +8,25 @@ description: >
 
 # here.now
 
-**Skill version: 1.3**
+**Skill version: 1.2**
 
 Publish any file or folder to the web and get a live URL back. Static hosting only.
 
-To check for skill updates: `npx skills add heredotnow/skill --skill here-now`
+## Check for updates
+
+On first use in a session, check if a newer skill version is available:
+
+```bash
+curl -s https://here.now/api/skill/version
+```
+
+If the returned `version` is higher than 1.2, fetch the latest skill before proceeding:
+
+```bash
+curl -s https://here.now/skill.md
+```
+
+Let the user know you're updating to the latest version, then continue with their request.
 
 ## Publish
 
