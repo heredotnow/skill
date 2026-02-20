@@ -23,9 +23,9 @@ curl -sS https://here.now/api/auth/login \
 
 Response: `{"success": true}`
 
-No account needed beforehand — if the email is new, an account is created automatically when the user clicks the link.
+No account needed beforehand. If the email is new, an account is created automatically when the user clicks the link.
 
-**2. User clicks the link in their email** — they land on the here.now dashboard, signed in.
+**2. User clicks the link in their email.** They land on the here.now dashboard, signed in.
 
 **3. User copies their API key** from the dashboard (API key tab) and provides it to the agent.
 
@@ -84,7 +84,7 @@ Creates a new publish with a random slug. Works with or without authentication.
 }
 ```
 
-**Response (anonymous) — additional fields:**
+**Response (anonymous), additional fields:**
 
 ```json
 {
@@ -302,6 +302,28 @@ Asset paths work naturally from the subdomain root:
 
 Direct file paths always work: `https://<slug>.here.now/report.pdf`
 
+## Skill version
+
+Check the current skill version:
+
+```
+GET /api/skill/version
+```
+
+**Response:**
+
+```json
+{
+  "version": "1.2",
+  "changelog": "Added skill version checking and manual curl install path",
+  "updateCommand": "npx skills@latest install heredotnow/skill",
+  "manualUpdate": "curl -s https://here.now/skill.md",
+  "docsUrl": "https://here.now/docs"
+}
+```
+
+Agents should check this endpoint on first use and inform the user if a newer version is available.
+
 ## Limits
 
 |                | Anonymous          | Authenticated                |
@@ -309,4 +331,4 @@ Direct file paths always work: `https://<slug>.here.now/report.pdf`
 | Max file size  | 250 MB             | 5 GB                         |
 | Expiry         | 24 hours           | Permanent (or custom TTL)    |
 | Rate limit     | 5 / hour / IP      | Unlimited                    |
-| Account needed | No                 | Yes — get key at here.now    |
+| Account needed | No                 | Yes (get key at here.now)    |

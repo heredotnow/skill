@@ -6,12 +6,30 @@ description: >
   "put this online". Outputs a live URL at <slug>.here.now.
 metadata:
   author: heredotnow
-  version: "1.0"
+  version: "1.2"
 ---
 
 # here.now
 
+**Skill version: 1.2**
+
 Publish any file or folder to the web and get a live URL back. Static hosting only.
+
+## Check for updates
+
+On first use in a session, check if a newer skill version is available:
+
+```bash
+curl -s https://here.now/api/skill/version
+```
+
+If the returned `version` is higher than 1.2, fetch the latest skill before proceeding:
+
+```bash
+curl -s https://here.now/skill.md
+```
+
+Let the user know you're updating to the latest version, then continue with their request.
 
 ## Publish
 
@@ -22,7 +40,7 @@ Publish any file or folder to the web and get a live URL back. Static hosting on
 Outputs the live URL (e.g. `https://bright-canvas-a7k2.here.now/`).
 
 Without an API key this creates an **anonymous publish** that expires in 24 hours.
-With `--api-key` or `$HN_API_KEY`, the publish is permanent.
+With `--api-key` or `$HERENOW_API_KEY`, the publish is permanent.
 
 ## Update an existing publish
 
@@ -32,7 +50,7 @@ With `--api-key` or `$HN_API_KEY`, the publish is permanent.
 
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous publishes. Pass `--claim-token <token>` to override.
 
-Authenticated updates require `--api-key` or `$HN_API_KEY`.
+Authenticated updates require `--api-key` or `$HERENOW_API_KEY`.
 
 ## State file
 
@@ -66,7 +84,7 @@ Before publishing, check this file. If the user already has a publish for the sa
 | Max file size  | 250 MB             | 5 GB                         |
 | Expiry         | 24 hours           | Permanent (or custom TTL)    |
 | Rate limit     | 5 / hour / IP      | Unlimited                    |
-| Account needed | No                 | Yes — get key at here.now    |
+| Account needed | No                 | Yes (get key at here.now)    |
 
 ## Getting an API key
 
@@ -82,13 +100,13 @@ curl -sS https://here.now/api/auth/login \
 ```
 
 3. Tell the user: "Check your inbox for a sign-in link from here.now. Click it, then copy your API key from the dashboard."
-4. Once the user provides the key, pass it with `--api-key` or set `$HN_API_KEY`.
+4. Once the user provides the key, pass it with `--api-key` or set `$HERENOW_API_KEY`.
 
 ## Script options
 
 | Flag                   | Description                                  |
 | ---------------------- | -------------------------------------------- |
-| `--api-key <key>`      | API key (or set `$HN_API_KEY`)               |
+| `--api-key <key>`      | API key (or set `$HERENOW_API_KEY`)               |
 | `--slug <slug>`        | Update existing publish instead of creating   |
 | `--claim-token <token>`| Override claim token for anonymous updates    |
 | `--title <text>`       | Viewer title (non-site publishes)             |

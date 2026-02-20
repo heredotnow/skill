@@ -2,7 +2,7 @@
 set -euo pipefail
 
 BASE_URL="https://here.now"
-API_KEY="${HN_API_KEY:-}"
+API_KEY="${HERENOW_API_KEY:-}"
 SLUG=""
 CLAIM_TOKEN=""
 TITLE=""
@@ -15,7 +15,7 @@ usage() {
 Usage: publish.sh <file-or-dir> [options]
 
 Options:
-  --api-key <key>         API key (or set $HN_API_KEY)
+  --api-key <key>         API key (or set $HERENOW_API_KEY)
   --slug <slug>           Update existing publish
   --claim-token <token>   Claim token for anonymous updates
   --title <text>          Viewer title
