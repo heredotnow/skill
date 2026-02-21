@@ -2,6 +2,7 @@
 set -euo pipefail
 
 BASE_URL="https://here.now"
+CREDENTIALS_FILE="$HOME/.herenow/credentials"
 API_KEY="${HERENOW_API_KEY:-}"
 SLUG=""
 CLAIM_TOKEN=""
@@ -49,6 +50,11 @@ done
 
 [[ -n "$TARGET" ]] || usage
 [[ -e "$TARGET" ]] || die "path does not exist: $TARGET"
+
+# Load API key from credentials file if not provided via flag or env
+if [[ -z "$API_KEY" && -f "$CREDENTIALS_FILE" ]]; then
+  API_KEY=$(cat "$CREDENTIALS_FILE" | tr -d '[:space:]')
+fi
 
 BASE_URL="${BASE_URL%/}"
 STATE_DIR=".herenow"
