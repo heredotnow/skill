@@ -10,7 +10,7 @@
   "interface": {
     "displayName": "here.now",
     "shortDescription": "Publish websites and store private agent files.",
-    "longDescription": "here.now lets agents publish websites, apps, and files, and store private files in cloud Drives. Publish HTML apps, documents, images, PDFs, videos, and static files to live URLs at {slug}.here.now or custom domains, or use private cloud Drives for agent files such as documents, context, memory, plans, assets, media, research, code, etc. Supports passwords, custom domains, proxy routes, payment gating, and more — see here.now/docs for the full feature set.",
+    "longDescription": "here.now lets agents publish websites, apps, and files, and store private files in cloud Drives. Publish HTML apps, documents, images, PDFs, videos, and static files to live URLs at {slug}.here.now or custom domains, or use private cloud Drives for agent files such as documents, context, memory, plans, assets, media, research, code, etc. Supports passwords, custom domains, proxy routes, and more — see here.now/docs for the full feature set.",
     "developerName": "here.now",
     "category": "Coding",
     "websiteURL": "https://here.now",

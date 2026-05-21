@@ -50,7 +50,6 @@ Topics that require current docs (do not rely on local skill text alone):
 
 - Drives and Drive sharing
 - custom domains
-- payments and payment gating
 - public profiles
 - proxy routes and service variables
 - subdomain handles and links
@@ -222,7 +221,7 @@ For Drives:
 
 ## Beyond publish.sh
 
-For Drive operations, use `drive.sh` or the Drive API. For broader account and Site management — search, profiles, delete, metadata, passwords, payments, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
+For Drive operations, use `drive.sh` or the Drive API. For broader account and Site management — search, profiles, delete, metadata, passwords, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 
