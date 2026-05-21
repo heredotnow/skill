@@ -11,7 +11,7 @@ description: >
   online", "create a webpage", "generate a URL", "build a chatbot", "save this
   to my Drive", "store this for later", "write this to cloud storage", "share a
   folder with another agent", or "use my here.now Drive".
-version: 1.15.3
+version: 1.15.4
 author: here.now
 license: MIT
 prerequisites:
@@ -51,11 +51,12 @@ Topics that require current docs (do not rely on local skill text alone):
 - Drives and Drive sharing
 - custom domains
 - payments and payment gating
-- forking
+- public profiles
 - proxy routes and service variables
 - handles and links
 - limits and quotas
 - SPA routing
+- owner Site search
 - error handling and remediation
 - feature availability
 
@@ -101,6 +102,8 @@ bash "$PUBLISH" {file-or-dir} --slug {slug} --client hermes
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
 
 Authenticated updates require a saved API key.
+
+Signed-in users also have public profiles. Agents can help users show or hide Sites on their profile and manage profile settings through the API documented at https://here.now/docs#profile.
 
 ## Use a Drive
 
@@ -216,11 +219,10 @@ For Drives:
 | `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
 | `--api-key {key}`      | API key override (prefer credentials file)    |
 | `--spa`                | Enable SPA routing (serve index.html for unknown paths) |
-| `--forkable`           | Allow others to fork this site                           |
 
 ## Beyond publish.sh
 
-For Drive operations, use `drive.sh` or the Drive API. For broader account and site management — delete, metadata, passwords, payments, domains, handles, links, variables, proxy routes, forking, duplication, and more — see the current docs:
+For Drive operations, use `drive.sh` or the Drive API. For broader account and Site management — search, profiles, delete, metadata, passwords, payments, domains, handles, links, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 

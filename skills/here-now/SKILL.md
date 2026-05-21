@@ -15,7 +15,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.15.3**
+**Skill version: 1.15.4**
 
 here.now lets agents publish websites and store private files in cloud Drives.
 
@@ -46,7 +46,7 @@ Topics that require current docs (do not rely on local skill text alone):
 - Drives and Drive sharing
 - custom domains
 - payments and payment gating
-- forking
+- public profiles
 - proxy routes and service variables
 - handles and links
 - limits and quotas
@@ -95,6 +95,8 @@ You can also publish raw files without any HTML. Single files get a rich auto-vi
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
 
 Authenticated updates require a saved API key.
+
+Signed-in users also have public profiles. Agents can help users show or hide Sites on their profile and manage profile settings through the API documented at https://here.now/docs#profile.
 
 ## Use a Drive
 
@@ -220,11 +222,10 @@ For Drives:
 | `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
 | `--api-key {key}`      | API key override (prefer credentials file)    |
 | `--spa`                | Enable SPA routing (serve index.html for unknown paths) |
-| `--forkable`           | Allow others to fork this site                           |
 
 ## Beyond publish.sh
 
-For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and site management — search, delete, metadata, passwords, payments, domains, handles, links, variables, proxy routes, forking, duplication, and more — see the current docs:
+For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — search, profiles, delete, metadata, passwords, payments, domains, handles, links, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 
