@@ -51,6 +51,7 @@ Topics that require current docs (do not rely on local skill text alone):
 - handles and links
 - limits and quotas
 - SPA routing
+- owner Site search
 - error handling and remediation
 - feature availability
 
@@ -94,6 +95,19 @@ You can also publish raw files without any HTML. Single files get a rich auto-vi
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
 
 Authenticated updates require a saved API key.
+
+## Search your sites
+
+When a user asks you to find one of their own published Sites or search across Site contents, use the authenticated Site search API instead of scraping public URLs:
+
+```bash
+curl -sS "https://here.now/api/v1/publishes/search?q={query}" \
+  -H "Authorization: Bearer {API_KEY}"
+```
+
+The endpoint searches the user's active owned Sites by slug, URL/domain, viewer metadata, file path, and indexed text content. It includes the owner's password-protected and payment-gated Sites because search reads stored publish files, not public Site URLs.
+
+Return the preferred URL from `primaryUrl` when present, otherwise `siteUrl`. Use `matchedPaths` and `matchedFields` to explain why a Site matched. Do not use Site search for Drive files, historical Site versions, PDF body text, JSON bodies, JavaScript bundles, or semantic/vector search.
 
 ## Use a Drive
 
@@ -223,7 +237,7 @@ For Drives:
 
 ## Beyond publish.sh
 
-For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and site management — delete, metadata, passwords, payments, domains, handles, links, variables, proxy routes, forking, duplication, and more — see the current docs:
+For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and site management — search, delete, metadata, passwords, payments, domains, handles, links, variables, proxy routes, forking, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 
