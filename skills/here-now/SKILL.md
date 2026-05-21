@@ -96,19 +96,6 @@ The script auto-loads the `claimToken` from `.herenow/state.json` when updating 
 
 Authenticated updates require a saved API key.
 
-## Search your sites
-
-When a user asks you to find one of their own published Sites or search across Site contents, use the authenticated Site search API instead of scraping public URLs:
-
-```bash
-curl -sS "https://here.now/api/v1/publishes/search?q={query}" \
-  -H "Authorization: Bearer {API_KEY}"
-```
-
-The endpoint searches the user's active owned Sites by slug, URL/domain, viewer metadata, file path, and indexed text content. It includes the owner's password-protected and payment-gated Sites because search reads stored publish files, not public Site URLs.
-
-Return the preferred URL from `primaryUrl` when present, otherwise `siteUrl`. Use `matchedPaths` and `matchedFields` to explain why a Site matched. Do not use Site search for Drive files, historical Site versions, PDF body text, JSON bodies, JavaScript bundles, or semantic/vector search.
-
 ## Use a Drive
 
 Use a Drive when the user wants private cloud storage for agent files: documents, context, memory, plans, assets, media, research, code, and anything else that should persist without being published as a website.
