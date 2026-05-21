@@ -16,7 +16,6 @@ DESCRIPTION=""
 TTL=""
 CLIENT=""
 TARGET=""
-FORKABLE=""
 SPA_MODE=""
 FROM_DRIVE=""
 DRIVE_VERSION=""
@@ -33,7 +32,6 @@ Options:
   --description <text>    Viewer description
   --ttl <seconds>         Expiry (authenticated only)
   --client <name>         Agent name for attribution (e.g. cursor, claude-code)
-  --forkable              Allow others to fork this site
   --spa                   Enable SPA routing
   --from-drive <drv_...>  Publish a Drive snapshot instead of local files
   --version <dv_...>      Drive version for --from-drive (default: current head)
@@ -73,7 +71,6 @@ while [[ $# -gt 0 ]]; do
     --client)       CLIENT="$2"; shift 2 ;;
     --base-url)     BASE_URL="$2"; shift 2 ;;
     --allow-nonherenow-base-url) ALLOW_NON_HERENOW_BASE_URL=1; shift ;;
-    --forkable)     FORKABLE="true"; shift ;;
     --spa)          SPA_MODE="true"; shift ;;
     --from-drive)   FROM_DRIVE="$2"; shift 2 ;;
     --version)      DRIVE_VERSION="$2"; shift 2 ;;
@@ -121,7 +118,6 @@ if [[ -n "$FROM_DRIVE" ]]; then
     [[ -n "$DESCRIPTION" ]] && viewer=$(echo "$viewer" | "$JQ_BIN" --arg d "$DESCRIPTION" '.description = $d')
     BODY=$(echo "$BODY" | "$JQ_BIN" --argjson v "$viewer" '.viewer = $v')
   fi
-  [[ "$FORKABLE" == "true" ]] && BODY=$(echo "$BODY" | "$JQ_BIN" '.forkable = true')
   [[ "$SPA_MODE" == "true" ]] && BODY=$(echo "$BODY" | "$JQ_BIN" '.spaMode = true')
   CLIENT_HEADER_VALUE="here-now-publish-sh"
   if [[ -n "$CLIENT" ]]; then
@@ -235,18 +231,6 @@ fi
 file_count=$(echo "$FILES_JSON" | "$JQ_BIN" 'length')
 [[ "$file_count" -gt 0 ]] || die "no files found"
 
-# Read fork-meta.json defaults if present and no explicit flags given
-FORK_META=""
-if [[ -d "$TARGET" ]]; then
-  FORK_META_PATH="$TARGET/.herenow/fork-meta.json"
-  if [[ -f "$FORK_META_PATH" ]]; then
-    FORK_META=$(cat "$FORK_META_PATH")
-    if [[ -z "$FORKABLE" ]]; then
-      FORKABLE=$("$JQ_BIN" -r '.forkable // empty' <<< "$FORK_META" 2>/dev/null || true)
-    fi
-  fi
-fi
-
 # Build request body
 BODY=$(echo "$FILES_JSON" | "$JQ_BIN" '{files: .}')
 
@@ -263,10 +247,6 @@ fi
 
 if [[ -n "$CLAIM_TOKEN" && -n "$SLUG" && -z "$API_KEY" ]]; then
   BODY=$(echo "$BODY" | "$JQ_BIN" --arg ct "$CLAIM_TOKEN" '.claimToken = $ct')
-fi
-
-if [[ "$FORKABLE" == "true" ]]; then
-  BODY=$(echo "$BODY" | "$JQ_BIN" '.forkable = true')
 fi
 
 if [[ "$SPA_MODE" == "true" ]]; then
