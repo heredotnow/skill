@@ -15,7 +15,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.15.5**
+**Skill version: 1.15.6**
 
 here.now lets agents publish websites and store private files in cloud Drives.
 
@@ -51,6 +51,7 @@ Topics that require current docs (do not rely on local skill text alone):
 - limits and quotas
 - SPA routing
 - owner Site search
+- Site analytics
 - error handling and remediation
 - feature availability
 
@@ -224,7 +225,7 @@ For Drives:
 
 ## Beyond publish.sh
 
-For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — search, profiles, delete, metadata, passwords, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
+For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — search, analytics, profiles, delete, metadata, passwords, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 
