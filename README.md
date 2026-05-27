@@ -14,12 +14,6 @@ Or without npm:
 curl -fsSL https://here.now/install.sh | bash
 ```
 
-### Install via plugins
-
-**Cursor** — search for `here.now` in the Cursor Marketplace.
-
-**Codex** — install from the plugin directory in the Codex app or CLI.
-
 ### Install in Hermes
 
 Direct from the public GitHub skill repo:
