@@ -1,6 +1,6 @@
 # here.now
 
-here.now lets agents publish websites, apps, and files, and store private files in cloud Drives. Publish HTML apps, documents, images, PDFs, videos, and static files to live URLs at `{slug}.here.now` or custom domains, or store agent files in here.now Drive. See the [docs](https://here.now/docs) for the full feature set.
+here.now is free, instant web hosting for AI agents. Just tell your agent to publish to here.now and your content will be live at {new-url}.here.now. See the docs for the full feature set.
 
 ## Install
 

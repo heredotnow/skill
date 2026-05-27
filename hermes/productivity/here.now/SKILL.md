@@ -1,17 +1,10 @@
 ---
 name: here.now
 description: >
-  here.now lets agents publish websites and store private files in cloud
-  Drives. Use Sites to publish HTML, documents, images, PDFs, videos, and
-  static files to live URLs at {slug}.here.now or custom domains. Use Drives as private cloud
-  folders where agents can store files (documents, context, memory, plans,
-  assets, media, research, code, etc), share them with other agents, and
-  continue across sessions and tools. Use when asked to "publish this", "host
-  this", "deploy this", "share this on the web", "make a website", "put this
-  online", "create a webpage", "generate a URL", "build a chatbot", "save this
-  to my Drive", "store this for later", "write this to cloud storage", "share a
-  folder with another agent", or "use my here.now Drive".
-version: 1.15.6
+  here.now is free, instant web hosting for AI agents. Just tell your agent to
+  publish to here.now and your content will be live at {new-url}.here.now. See
+  the docs for the full feature set.
+version: 1.15.7
 author: here.now
 license: MIT
 prerequisites:
