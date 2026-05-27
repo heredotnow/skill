@@ -11,7 +11,7 @@ description: >
   online", "create a webpage", "generate a URL", "build a chatbot", "save this
   to my Drive", "store this for later", "write this to cloud storage", "share a
   folder with another agent", or "use my here.now Drive".
-version: 1.15.5
+version: 1.15.6
 author: here.now
 license: MIT
 prerequisites:
@@ -56,6 +56,7 @@ Topics that require current docs (do not rely on local skill text alone):
 - limits and quotas
 - SPA routing
 - owner Site search
+- Site analytics
 - error handling and remediation
 - feature availability
 
@@ -221,7 +222,7 @@ For Drives:
 
 ## Beyond publish.sh
 
-For Drive operations, use `drive.sh` or the Drive API. For broader account and Site management — search, profiles, delete, metadata, passwords, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
+For Drive operations, use `drive.sh` or the Drive API. For broader account and Site management — search, analytics, profiles, delete, metadata, passwords, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 
