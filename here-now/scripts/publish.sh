@@ -102,8 +102,9 @@ if [[ -n "$API_KEY" && "$BASE_URL" != "https://here.now" && "$ALLOW_NON_HERENOW_
   die "refusing to send API key to non-default base URL; pass --allow-nonherenow-base-url to override"
 fi
 
-# Auto-load claim token from state file for anonymous updates
-if [[ -n "$SLUG" && -z "$CLAIM_TOKEN" && -z "$API_KEY" && -f "$STATE_FILE" ]]; then
+# Auto-load claim token from state file for slug updates (server uses it only for
+# anonymous sites; harmless when an API key is also present).
+if [[ -n "$SLUG" && -z "$CLAIM_TOKEN" && -f "$STATE_FILE" ]]; then
   CLAIM_TOKEN=$("$JQ_BIN" -r --arg s "$SLUG" '.publishes[$s].claimToken // empty' "$STATE_FILE" 2>/dev/null || true)
 fi
 
@@ -245,7 +246,7 @@ if [[ -n "$TITLE" || -n "$DESCRIPTION" ]]; then
   BODY=$(echo "$BODY" | "$JQ_BIN" --argjson v "$viewer" '.viewer = $v')
 fi
 
-if [[ -n "$CLAIM_TOKEN" && -n "$SLUG" && -z "$API_KEY" ]]; then
+if [[ -n "$CLAIM_TOKEN" && -n "$SLUG" ]]; then
   BODY=$(echo "$BODY" | "$JQ_BIN" --arg ct "$CLAIM_TOKEN" '.claimToken = $ct')
 fi
 
