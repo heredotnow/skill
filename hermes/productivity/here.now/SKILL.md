@@ -11,7 +11,7 @@ description: >
   online", "create a webpage", "generate a URL", "build a chatbot", "save this
   to my Drive", "store this for later", "write this to cloud storage", "share a
   folder with another agent", or "use my here.now Drive".
-version: 1.15.9
+version: 1.15.10
 author: here.now
 license: MIT
 prerequisites:

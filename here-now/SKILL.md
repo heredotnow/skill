@@ -15,7 +15,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.15.9**
+**Skill version: 1.15.10**
 
 here.now lets agents publish websites and store private files in cloud Drives.
 
