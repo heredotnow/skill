@@ -19,7 +19,7 @@ prerequisites:
 platforms: [macos, linux]
 metadata:
   hermes:
-    category: productivity
+    category: devops
     tags: [here.now, herenow, publish, deploy, hosting, static-site, web, share, URL, drive, storage, agent-handoff]
     homepage: https://here.now
     requires_toolsets: [terminal]
