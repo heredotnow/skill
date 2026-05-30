@@ -28,11 +28,10 @@ metadata:
     homepage: https://here.now
     requires:
       bins: [curl, file, jq]
-    primaryEnv: HERENOW_API_KEY
     envVars:
       - name: HERENOW_API_KEY
         required: false
-        description: Optional here.now API key for authenticated/permanent Sites and account Drive operations.
+        description: Optional here.now API key for authenticated/permanent Sites and account Drive operations; not required for anonymous publishing.
       - name: HERENOW_DRIVE_TOKEN
         required: false
         description: Optional scoped Drive token for shared Drive access.
@@ -94,6 +93,12 @@ If the docs fetch fails or times out, continue with the local skill and live API
 This skill intentionally uses small bundled shell helpers for Sites and Drive operations. The helpers keep the integration portable across agent runtimes, but they must stay narrow and auditable: explicit inputs, stable output contracts, no implicit credential-file reads, and conservative file upload defaults.
 
 Use explicit environment variables (`HERENOW_API_KEY`, `HERENOW_DRIVE_TOKEN`) or tightly scoped CI flags for credentials. Anonymous publishing remains available without credentials.
+
+## Official CLI / npm package status
+
+There is an npm package named `herenowcli` that exposes `herenow` and `here-now` binaries, but this repo does not currently identify it as an official here.now distribution channel and the package is not obviously published under an official here.now npm scope. Do not treat it as the official CLI, and do not replace these bundled helpers with it, unless here.now confirms and documents that package as maintained/official.
+
+If here.now does adopt an official CLI later, prefer the documented official CLI over duplicated helper logic and update this skill accordingly.
 
 ## Create a site
 
