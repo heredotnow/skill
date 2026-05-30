@@ -2,7 +2,6 @@
 set -euo pipefail
 
 BASE_URL="https://here.now"
-CREDENTIALS_FILE="$HOME/.herenow/credentials"
 API_KEY="${HERENOW_API_KEY:-}"
 DRIVE_TOKEN="${HERENOW_DRIVE_TOKEN:-}"
 ALLOW_NON_HERENOW_BASE_URL=0
@@ -13,7 +12,7 @@ usage() {
 Usage: drive.sh [global options] <command> [args]
 
 Global options:
-  --api-key <key>        Account API key (or $HERENOW_API_KEY / ~/.herenow/credentials)
+  --api-key <key>        Account API key for CI/scripting (prefer $HERENOW_API_KEY)
   --token <drv_live_...> Drive token (or $HERENOW_DRIVE_TOKEN)
   --base-url <url>       API base (default: https://here.now)
   --allow-nonherenow-base-url
@@ -70,9 +69,10 @@ CMD="${1:-}"
 [[ -n "$CMD" ]] || usage
 shift || true
 
-if [[ -z "$API_KEY" && -z "$DRIVE_TOKEN" && -f "$CREDENTIALS_FILE" ]]; then
-  API_KEY=$(tr -d '[:space:]' < "$CREDENTIALS_FILE")
-fi
+# API keys are accepted only from $HERENOW_API_KEY, $HERENOW_DRIVE_TOKEN,
+# --api-key, or --token. Deliberately do not read ~/.herenow/credentials from
+# this skill helper: agent-installed scripts that read credential files and make
+# network requests are flagged by Hermes security scanners and are harder to audit.
 
 BASE_URL="${BASE_URL%/}"
 if [[ "$BASE_URL" != "https://here.now" && "$ALLOW_NON_HERENOW_BASE_URL" -ne 1 ]]; then
@@ -87,7 +87,7 @@ if [[ -n "$DRIVE_TOKEN" ]]; then
 elif [[ -n "$API_KEY" ]]; then
   auth_header=(-H "authorization: Bearer $API_KEY")
 else
-  die "missing credentials; set HERENOW_API_KEY, HERENOW_DRIVE_TOKEN, or ~/.herenow/credentials"
+  die "missing credentials; set HERENOW_API_KEY, HERENOW_DRIVE_TOKEN, --api-key, or --token"
 fi
 
 compute_sha256() {

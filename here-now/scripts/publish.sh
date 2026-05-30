@@ -2,7 +2,6 @@
 set -euo pipefail
 
 BASE_URL="https://here.now"
-CREDENTIALS_FILE="$HOME/.herenow/credentials"
 API_KEY="${HERENOW_API_KEY:-}"
 API_KEY_SOURCE="none"
 if [[ -n "${HERENOW_API_KEY:-}" ]]; then
@@ -25,7 +24,7 @@ usage() {
 Usage: publish.sh <file-or-dir> [options]
 
 Options:
-  --api-key <key>         API key (or set $HERENOW_API_KEY)
+  --api-key <key>         API key for CI/scripting (prefer $HERENOW_API_KEY)
   --slug <slug>           Update existing publish
   --claim-token <token>   Claim token for anonymous updates
   --title <text>          Viewer title
@@ -87,11 +86,10 @@ else
   [[ -e "$TARGET" ]] || die "path does not exist: $TARGET"
 fi
 
-# Load API key from credentials file if not provided via flag or env
-if [[ -z "$API_KEY" && -f "$CREDENTIALS_FILE" ]]; then
-  API_KEY=$(cat "$CREDENTIALS_FILE" | tr -d '[:space:]')
-  [[ -n "$API_KEY" ]] && API_KEY_SOURCE="credentials"
-fi
+# API keys are accepted only from $HERENOW_API_KEY or --api-key.
+# Deliberately do not read ~/.herenow/credentials from this skill helper: agent-installed
+# scripts that read credential files and make network requests are flagged by Hermes
+# security scanners and are harder for users to audit.
 
 BASE_URL="${BASE_URL%/}"
 STATE_DIR=".herenow"
@@ -167,6 +165,30 @@ compute_sha256() {
   fi
 }
 
+should_publish_file() {
+  local rel="$1"
+  local base
+  base="$(basename "$rel")"
+
+  # macOS/editor noise and here.now local state.
+  [[ "$rel" == ".DS_Store" || "$base" == ".DS_Store" ]] && return 1
+  [[ "$rel" == ".herenow/fork-meta.json" || "$rel" == ".herenow/state.json" ]] && return 1
+
+  # Sensitive project files should not be published by default. Keep this list
+  # conservative: agents often publish working directories, and one accidental
+  # .env upload is one too many.
+  [[ "$rel" == ".env" || "$rel" == .env.* ]] && return 1
+  [[ "$base" == *.pem || "$base" == *.key || "$base" == *credential* || "$base" == *secret* ]] && return 1
+
+  case "$rel" in
+    .git/*|.ssh/*|.aws/*|.gcloud/*|.1password/*|.hermes/*|.herenow/*|node_modules/*)
+      return 1
+      ;;
+  esac
+
+  return 0
+}
+
 guess_content_type() {
   local f="$1"
   case "${f##*.}" in
@@ -214,9 +236,7 @@ elif [[ -d "$TARGET" ]]; then
   FILE_MAP="{}"
   while IFS= read -r -d '' f; do
     rel="${f#$TARGET/}"
-    [[ "$rel" == ".DS_Store" ]] && continue
-    [[ "$(basename "$rel")" == ".DS_Store" ]] && continue
-    [[ "$rel" == ".herenow/fork-meta.json" ]] && continue
+    should_publish_file "$rel" || continue
     sz=$(wc -c < "$f" | tr -d ' ')
     ct=$(guess_content_type "$f")
     h=$(compute_sha256 "$f")

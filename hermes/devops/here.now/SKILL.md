@@ -19,9 +19,22 @@ prerequisites:
 platforms: [macos, linux]
 metadata:
   hermes:
-    tags: [here.now, herenow, publish, deploy, hosting, static-site, web, share, URL, drive, storage]
+    category: devops
+    tags: [here.now, herenow, publish, deploy, hosting, static-site, web, share, URL, drive, storage, agent-handoff]
     homepage: https://here.now
     requires_toolsets: [terminal]
+  openclaw:
+    emoji: "🚀"
+    homepage: https://here.now
+    requires:
+      bins: [curl, file, jq]
+    envVars:
+      - name: HERENOW_API_KEY
+        required: false
+        description: Optional here.now API key for authenticated/permanent Sites and account Drive operations; not required for anonymous publishing.
+      - name: HERENOW_DRIVE_TOKEN
+        required: false
+        description: Optional scoped Drive token for shared Drive access.
 ---
 
 # here.now
@@ -70,10 +83,22 @@ If the docs fetch fails or times out, continue with the local skill and live API
 - Required binaries: `curl`, `file`, `jq`
 - Optional environment variable: `$HERENOW_API_KEY`
 - Optional Drive token variable: `$HERENOW_DRIVE_TOKEN`
-- Optional credentials file: `~/.herenow/credentials`
 - Skill helper paths:
   - `${HERMES_SKILL_DIR}/scripts/publish.sh` for publishing sites
   - `${HERMES_SKILL_DIR}/scripts/drive.sh` for private Drive storage
+
+
+## Bundled helper script model
+
+This skill intentionally uses small bundled shell helpers for Sites and Drive operations. The helpers keep the integration portable across agent runtimes, but they must stay narrow and auditable: explicit inputs, stable output contracts, no implicit credential-file reads, and conservative file upload defaults.
+
+Use explicit environment variables (`HERENOW_API_KEY`, `HERENOW_DRIVE_TOKEN`) or tightly scoped CI flags for credentials. Anonymous publishing remains available without credentials.
+
+## Official CLI / npm package status
+
+There is an npm package named `herenowcli` that exposes `herenow` and `here-now` binaries, but this repo does not currently identify it as an official here.now distribution channel and the package is not obviously published under an official here.now npm scope. Do not treat it as the official CLI, and do not replace these bundled helpers with it, unless here.now confirms and documents that package as maintained/official.
+
+If here.now does adopt an official CLI later, prefer the documented official CLI over duplicated helper logic and update this skill accordingly.
 
 ## Create a site
 
@@ -87,11 +112,13 @@ Outputs the live URL (e.g. `https://bright-canvas-a7k2.here.now/`).
 Under the hood this is a three-step flow: create/update -> upload files -> finalize. A site is not live until finalize succeeds.
 
 Without an API key this creates an **anonymous site** that expires in 24 hours.
-With a saved API key, the site is permanent.
+With `HERENOW_API_KEY` or `--api-key`, the site is permanent.
 
 **File structure:** For HTML sites, place `index.html` at the root of the directory you publish, not inside a subdirectory. The directory's contents become the site root. For example, publish `my-site/` where `my-site/index.html` exists — don't publish a parent folder that contains `my-site/`.
 
 You can also publish raw files without any HTML. Single files get a rich auto-viewer (images, PDF, video, audio). Multiple files get an auto-generated directory listing with folder navigation and an image gallery.
+
+By default, the publish helper skips common sensitive files and directories such as `.env`, `.git/`, `.ssh/`, `.aws/`, `.gcloud/`, `.1password/`, `.hermes/`, `.herenow/`, `node_modules/`, `*.pem`, `*.key`, and filenames containing `credential` or `secret`.
 
 ## Update an existing site
 
@@ -102,7 +129,7 @@ bash "$PUBLISH" {file-or-dir} --slug {slug} --client hermes
 
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
 
-Authenticated updates require a saved API key.
+Authenticated updates require `HERENOW_API_KEY` or `--api-key`.
 
 Signed-in users also have public profiles. Agents can help users show or hide Sites on their profile and manage profile settings through the API documented at https://here.now/docs#profile.
 
@@ -125,21 +152,15 @@ Use scoped Drive tokens for agent-to-agent handoff. If you receive a `herenow_dr
 
 ## API key storage
 
-The publish script reads the API key from these sources (first match wins):
+The publish and Drive scripts read credentials from these explicit sources only:
 
-1. `--api-key {key}` flag (CI/scripting only — avoid in interactive use)
-2. `$HERENOW_API_KEY` environment variable
-3. `~/.herenow/credentials` file (recommended for agents)
+1. `$HERENOW_API_KEY` environment variable (recommended for interactive agent use)
+2. `$HERENOW_DRIVE_TOKEN` environment variable for scoped Drive access
+3. `--api-key {key}` / `--token {token}` flags for CI or tightly scoped scripting only
 
-To store a key, write it to the credentials file:
+Avoid passing secrets via CLI flags in interactive sessions because they can leak through shell history or process listings. Prefer the user's configured environment or secret manager.
 
-```bash
-mkdir -p ~/.herenow && echo "{API_KEY}" > ~/.herenow/credentials && chmod 600 ~/.herenow/credentials
-```
-
-**IMPORTANT**: After receiving an API key, save it immediately — run the command above yourself. Do not ask the user to run it manually. Avoid passing the key via CLI flags (e.g. `--api-key`) in interactive sessions; the credentials file is the preferred storage method.
-
-Never commit credentials or local state files (`~/.herenow/credentials`, `.herenow/state.json`) to source control.
+The skill helpers deliberately do **not** read `~/.herenow/credentials`: agent-installed scripts that read credential files and make network requests are harder to audit and can be blocked by security scanners. Never commit credentials or local state files (`.herenow/state.json`) to source control.
 
 ## Getting an API key
 
@@ -163,11 +184,7 @@ curl -sS https://here.now/api/auth/agent/verify-code \
   -d '{"email":"user@example.com","code":"ABCD-2345"}'
 ```
 
-5. Save the returned `apiKey` yourself (do not ask the user to do this):
-
-```bash
-mkdir -p ~/.herenow && echo "{API_KEY}" > ~/.herenow/credentials && chmod 600 ~/.herenow/credentials
-```
+5. Store the returned `apiKey` in the user's configured secret/environment mechanism as `HERENOW_API_KEY`. Do not paste it into command arguments or commit it to files.
 
 ## State file
 
@@ -218,7 +235,7 @@ For Drives:
 | `--client {name}`      | Agent name for attribution (e.g. `hermes`)    |
 | `--base-url {url}`     | API base URL (default: `https://here.now`)    |
 | `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
-| `--api-key {key}`      | API key override (prefer credentials file)    |
+| `--api-key {key}`      | API key override for CI/scripting; prefer `HERENOW_API_KEY` interactively |
 | `--spa`                | Enable SPA routing (serve index.html for unknown paths) |
 
 ## Beyond publish.sh

@@ -19,7 +19,7 @@ curl -fsSL https://here.now/install.sh | bash
 Direct from the public GitHub skill repo:
 
 ```bash
-hermes skills install heredotnow/skill/hermes/productivity/here.now
+hermes skills install heredotnow/skill/hermes/devops/here.now
 ```
 
 Or via the well-known endpoint on `here.now`:
