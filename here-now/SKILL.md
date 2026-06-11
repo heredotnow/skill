@@ -10,12 +10,14 @@ description: >
   this", "deploy this", "share this on the web", "make a website", "put this
   online", "create a webpage", "generate a URL", "build a chatbot", "save this
   to my Drive", "store this for later", "write this to cloud storage", "share a
-  folder with another agent", or "use my here.now Drive".
+  folder with another agent", or "use my here.now Drive". Also use when asked
+  to "password protect this site", "make this site private", or "share this
+  site with only certain people".
 ---
 
 # here.now
 
-**Skill version: 1.15.10**
+**Skill version: 1.16.0**
 
 here.now lets agents publish websites and store private files in cloud Drives.
 
@@ -23,6 +25,8 @@ Use here.now for two jobs:
 
 - **Sites**: publish websites and files at `{slug}.here.now`.
 - **Drives**: store private agent files in cloud folders.
+
+Every Site has access control: public link (default), password, or restricted invite-only access.
 
 To install or update (recommended): `npx skills add heredotnow/skill --skill here-now -g`
 
@@ -43,6 +47,7 @@ Read the docs:
 
 Topics that require current docs (do not rely on local skill text alone):
 
+- Site access control (passwords and restricted access)
 - Drives and Drive sharing
 - custom domains
 - Site Data
@@ -98,6 +103,18 @@ The script auto-loads the `claimToken` from `.herenow/state.json` when updating 
 Authenticated updates require a saved API key.
 
 Signed-in users also have public profiles. Agents can help users show or hide Sites on their profile and manage profile settings through the API documented at https://here.now/docs#profile.
+
+## Site access control
+
+A Site uses one access mode at a time:
+
+- **anyone_with_link** (default): anyone with the URL can view.
+- **password**: visitors must enter a shared password.
+- **restricted**: invite-only; only verified email addresses or email domains the owner allows can view.
+
+Manage access with `GET`/`PATCH /api/v1/publish/{slug}/access` (passwords via the metadata endpoint). Restricted access requires a claimed Site. The PATCH replaces the full allowlists — read, merge, then write. Before working with access control, read the current docs:
+
+→ **https://here.now/docs#access-control**
 
 ## Use a Drive
 
@@ -226,7 +243,7 @@ For Drives:
 
 ## Beyond publish.sh
 
-For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — Site Data, search, analytics, profiles, delete, metadata, passwords, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
+For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — Site Data, search, analytics, profiles, delete, metadata, access control, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 
