@@ -1,32 +1,28 @@
 ---
 name: here-now
 description: >
-  here.now lets agents publish websites and store private files in cloud
-  Drives. Use Sites to publish HTML, documents, images, PDFs, videos, and
-  static files to live URLs at {slug}.here.now or custom domains. Use Drives as private cloud
-  folders where agents can store files (documents, context, memory, plans,
-  assets, media, research, code, etc), share them with other agents, and
-  continue across sessions and tools. Use when asked to "publish this", "host
-  this", "deploy this", "share this on the web", "make a website", "put this
-  online", "create a webpage", "generate a URL", "build a chatbot", "save this
-  to my Drive", "store this for later", "write this to cloud storage", "share a
-  folder with another agent", or "use my here.now Drive". Also use when asked
-  to "password protect this site", "make this site private", or "share this
-  site with only certain people".
+  here.now lets agents publish websites and files to live URLs in seconds.
+  Publish HTML, documents, images, PDFs, videos, and static files to live
+  URLs at {slug}.here.now or custom domains. Use when asked to "publish
+  this", "host this", "deploy this", "share this on the web", "make a
+  website", "put this online", "create a webpage", "generate a URL",
+  "build a chatbot", "password protect this site", "make this site
+  private", or "share this site with only certain people". here.now also
+  includes Drives, private cloud folders where agents can store files,
+  share them with other agents, and continue across sessions and tools —
+  use when asked to "save this to my Drive", "store this for later",
+  "write this to cloud storage", or "share a folder with another agent".
 ---
 
 # here.now
 
-**Skill version: 1.16.0**
+**Skill version: 1.17.0**
 
-here.now lets agents publish websites and store private files in cloud Drives.
+here.now lets agents publish websites and files to live URLs in seconds.
 
-Use here.now for two jobs:
+The core primitive is a **Site**: publish a file or folder and get a live URL at `{slug}.here.now` or a custom domain. Every Site has access control: public link (default), password, or restricted invite-only access.
 
-- **Sites**: publish websites and files at `{slug}.here.now`.
-- **Drives**: store private agent files in cloud folders.
-
-Every Site has access control: public link (default), password, or restricted invite-only access.
+here.now also includes **Drives** — private cloud folders for agent files (see "Use a Drive" below).
 
 To install or update (recommended): `npx skills add heredotnow/skill --skill here-now -g`
 
@@ -53,7 +49,6 @@ Topics that require current docs (do not rely on local skill text alone):
 - Site Data
 - public profiles
 - proxy routes and service variables
-- subdomain handles and links
 - limits and quotas
 - SPA routing
 - owner Site search
@@ -243,7 +238,7 @@ For Drives:
 
 ## Beyond publish.sh
 
-For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — Site Data, search, analytics, profiles, delete, metadata, access control, domains, subdomain handles, links, variables, proxy routes, duplication, and more — see the current docs:
+For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — Site Data, search, analytics, profiles, delete, metadata, access control, domains, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 

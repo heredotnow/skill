@@ -1,7 +1,7 @@
 {
   "name": "here.now",
-  "description": "Publish websites, apps, and files, and store private files in cloud Drives. Publish HTML apps, documents, images, PDFs, videos, and static files to live URLs at {slug}.here.now or custom domains, or store agent files in private Drives.",
-  "version": "0.1.1",
+  "description": "Publish websites, apps, and files to live URLs at {slug}.here.now or custom domains. Publish HTML apps, documents, images, PDFs, videos, and static files, with access control, custom domains, analytics, and private Drive storage for agent files.",
+  "version": "0.1.2",
   "author": { "name": "here.now" },
   "homepage": "https://here.now",
   "repository": "https://github.com/heredotnow/skill",
