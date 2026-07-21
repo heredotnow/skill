@@ -35,10 +35,6 @@ The core primitive is a **Site**: publish a file or folder and get a live URL at
 
 here.now also includes **workspaces** — shared team accounts where Sites belong to the team and serve at `{label}.{workspace}.here.now` (see "Publish to a workspace" below).
 
-To install or update (recommended): `npx skills add heredotnow/skill --skill here-now -g`
-
-For repo-pinned/project-local installs, run the same command without `-g`.
-
 ## Current docs
 
 **Before answering questions about here.now capabilities, features, or workflows, read the current docs:**
@@ -78,14 +74,15 @@ If the docs fetch fails or times out, continue with the local skill and live API
 - Optional environment variable: `$HERENOW_API_KEY`
 - Optional Drive token variable: `$HERENOW_DRIVE_TOKEN`
 - Optional credentials file: `~/.herenow/credentials`
-- Bundled helpers:
-  - `./scripts/publish.sh` for publishing sites
-  - `./scripts/drive.sh` for private Drive storage
+- Skill helper paths:
+  - `${HERMES_SKILL_DIR}/scripts/publish.sh` for publishing sites
+  - `${HERMES_SKILL_DIR}/scripts/drive.sh` for private Drive storage
 
 ## Create a site
 
 ```bash
-./scripts/publish.sh {file-or-dir}
+PUBLISH="${HERMES_SKILL_DIR}/scripts/publish.sh"
+bash "$PUBLISH" {file-or-dir} --client hermes
 ```
 
 Outputs the live URL (e.g. `https://bright-canvas-a7k2.here.now/`).
@@ -102,7 +99,8 @@ You can also publish raw files without any HTML. Single files get a rich auto-vi
 ## Update an existing site
 
 ```bash
-./scripts/publish.sh {file-or-dir} --slug {slug}
+PUBLISH="${HERMES_SKILL_DIR}/scripts/publish.sh"
+bash "$PUBLISH" {file-or-dir} --slug {slug} --client hermes
 ```
 
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
@@ -116,7 +114,8 @@ Signed-in users also have public profiles. Agents can help users show or hide Si
 Workspaces are shared team accounts: Sites published into one belong to the team, not the publishing member, and get a memorable URL at `{label}.{workspace}.here.now`.
 
 ```bash
-./scripts/publish.sh {file-or-dir} --workspace {subdomain}
+PUBLISH="${HERMES_SKILL_DIR}/scripts/publish.sh"
+bash "$PUBLISH" {file-or-dir} --workspace {subdomain} --client hermes
 ```
 
 Requires a saved API key and membership in the workspace. List the user's workspaces (and valid subdomains) with `GET /api/v1/accounts`. Workspace Sites default to member-only access; the script reports the team URL as `publish_result.account_url`.
@@ -146,24 +145,26 @@ Use a Drive when the user wants private cloud storage for agent files: documents
 Every signed-in account has a default Drive named `My Drive`.
 
 ```bash
-./scripts/drive.sh default
-./scripts/drive.sh ls My Drive
-./scripts/drive.sh put My Drive notes/today.md --from ./notes/today.md
-./scripts/drive.sh cat My Drive notes/today.md
-./scripts/drive.sh share My Drive --perms write --prefix notes/ --ttl 7d
+DRIVE="${HERMES_SKILL_DIR}/scripts/drive.sh"
+bash "$DRIVE" default
+bash "$DRIVE" ls "My Drive"
+bash "$DRIVE" put "My Drive" notes/today.md --from ./notes/today.md
+bash "$DRIVE" cat "My Drive" notes/today.md
+bash "$DRIVE" share "My Drive" --perms write --prefix notes/ --ttl 7d
 ```
 
-Use scoped Drive tokens for agent-to-agent handoff. If you receive a `herenow_drive` share block, use its `token` as `Authorization: Bearer <token>` against `api_base`, respect `pathPrefix` when present, and preserve ETags on writes. A `pathPrefix` of `null` means full-Drive access. If the skill is available, prefer `./scripts/drive.sh`; otherwise call the listed API operations directly.
+Use scoped Drive tokens for agent-to-agent handoff. If you receive a `herenow_drive` share block, use its `token` as `Authorization: Bearer <token>` against `api_base`, respect `pathPrefix` when present, and preserve ETags on writes. A `pathPrefix` of `null` means full-Drive access. If the skill is available, prefer `drive.sh`; otherwise call the listed API operations directly.
 
 ## Client attribution
 
 Pass `--client` so here.now can track reliability by agent:
 
 ```bash
-./scripts/publish.sh {file-or-dir} --client cursor
+PUBLISH="${HERMES_SKILL_DIR}/scripts/publish.sh"
+bash "$PUBLISH" {file-or-dir} --client hermes
 ```
 
-This sends `X-HereNow-Client: cursor/publish-sh` on publish API calls.
+This sends `X-HereNow-Client: hermes/publish-sh` on publish API calls.
 If omitted, the script sends a fallback value.
 
 ## API key storage
@@ -268,7 +269,7 @@ For Drives:
 
 ## Beyond publish.sh
 
-For Drive operations, use `./scripts/drive.sh` or the Drive API. For broader account and Site management — Site Data, search, analytics, profiles, delete, metadata, access control, domains, variables, proxy routes, duplication, and more — see the current docs:
+For Drive operations, use `drive.sh` or the Drive API. For broader account and Site management — Site Data, search, analytics, profiles, delete, metadata, access control, domains, variables, proxy routes, duplication, and more — see the current docs:
 
 → **https://here.now/docs**
 
