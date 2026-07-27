@@ -227,6 +227,7 @@ elif [[ -d "$TARGET" ]]; then
     [[ "$rel" == ".DS_Store" ]] && continue
     [[ "$(basename "$rel")" == ".DS_Store" ]] && continue
     [[ "$rel" == ".herenow/fork-meta.json" ]] && continue
+    [[ "$rel" == ".git" || "$rel" =~ (^|/).git/ ]] && continue
     sz=$(wc -c < "$f" | tr -d ' ')
     ct=$(guess_content_type "$f")
     h=$(compute_sha256 "$f")
