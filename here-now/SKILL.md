@@ -16,7 +16,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.18.1**
+**Skill version: 1.19.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -54,6 +54,7 @@ Topics that require current docs (do not rely on local skill text alone):
 - SPA routing
 - owner Site search
 - Site analytics
+- Site version history, previews, and rollback
 - error handling and remediation
 - feature availability
 
@@ -97,6 +98,8 @@ You can also publish raw files without any HTML. Single files get a rich auto-vi
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
 
 Authenticated updates require a saved API key.
+
+Every publish records an immutable version. If the user asks to see earlier versions of a Site, undo a publish, or roll back: list history with `GET /api/v1/publish/{slug}/versions` and restore instantly with `POST /api/v1/publish/{slug}/versions/{versionId}/restore` (restoring keeps the current access mode, password, and domains). Version access requires a paid plan and is included for workspace Sites; free accounts' history is recorded and unlocks on upgrade. A byte-identical republish returns `unchanged: true` from finalize instead of creating a new version. See https://here.now/docs#versions.
 
 Signed-in users also have public profiles. Agents can help users show or hide Sites on their profile and manage profile settings through the API documented at https://here.now/docs#profile.
 
