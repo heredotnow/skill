@@ -227,6 +227,8 @@ elif [[ -d "$TARGET" ]]; then
     [[ "$rel" == ".DS_Store" ]] && continue
     [[ "$(basename "$rel")" == ".DS_Store" ]] && continue
     [[ "$rel" == ".herenow/fork-meta.json" ]] && continue
+    # Local publish state (slug/claim token cache) — never site content.
+    [[ "$rel" == ".herenow/state.json" ]] && continue
     sz=$(wc -c < "$f" | tr -d ' ')
     ct=$(guess_content_type "$f")
     h=$(compute_sha256 "$f")
@@ -335,7 +337,10 @@ else
 fi
 upload_errors=0
 
-for i in $(seq 0 $((UPLOAD_COUNT - 1))); do
+# C-style loop: BSD seq counts DOWN for `seq 0 -1`, so a zero-upload
+# republish (all files unchanged) used to iterate twice with null paths
+# and die between create and finalize, stranding the site in pending.
+for ((i = 0; i < UPLOAD_COUNT; i++)); do
   upload_path=$(echo "$RESPONSE" | "$JQ_BIN" -r ".upload.uploads[$i].path")
   upload_url=$(echo "$RESPONSE" | "$JQ_BIN" -r ".upload.uploads[$i].url")
   upload_ct=$(echo "$RESPONSE" | "$JQ_BIN" -r ".upload.uploads[$i].headers[\"Content-Type\"] // empty")
