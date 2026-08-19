@@ -12,7 +12,7 @@ description: >
   team and serve at {label}.{workspace}.here.now — use when asked to
   "publish this to our team workspace", "share this with my team", or
   "put this in our company workspace".
-version: 1.19.0
+version: 1.20.0
 author: here.now
 license: MIT
 prerequisites:
@@ -27,7 +27,7 @@ metadata:
 
 # here.now
 
-**Skill version: 1.19.0**
+**Skill version: 1.20.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -225,8 +225,8 @@ After every site create/update, the script writes to `.herenow/state.json` in th
   "publishes": {
     "bright-canvas-a7k2": {
       "siteUrl": "https://bright-canvas-a7k2.here.now/",
-      "claimToken": "abc123",
-      "claimUrl": "https://here.now/claim?slug=bright-canvas-a7k2&token=abc123",
+      "claimToken": "4fQ9tK2mXb7cW1pZ",
+      "claimUrl": "https://here.now/c/4fQ9tK2mXb7cW1pZ",
       "expiresAt": "2026-02-18T01:00:00.000Z"
     }
   }
@@ -245,7 +245,7 @@ For published sites:
 - Read and follow `publish_result.*` lines from script stderr to determine auth mode.
 - When `publish_result.account_url` is non-empty (workspace publishes), share it as the primary team URL alongside `siteUrl`.
 - When `publish_result.auth_mode=authenticated`: tell the user the site is **permanent** and saved to their account. No claim URL is needed.
-- When `publish_result.auth_mode=anonymous`: tell the user the site **expires in 24 hours**. Share the claim URL (if `publish_result.claim_url` is non-empty and starts with `https://`) so they can keep it permanently. Warn that claim tokens are only returned once and cannot be recovered.
+- When `publish_result.auth_mode=anonymous`: tell the user the site **expires in 24 hours**. Share the claim URL (if `publish_result.claim_url` is non-empty and starts with `https://`) so they can keep it permanently. Copy it byte-for-byte as a clickable link — never shorten, redact, summarize, or replace any part of it with `...`; a modified claim link will not work. Warn that claim tokens are only returned once and cannot be recovered.
 - Never tell the user to inspect `.herenow/state.json` for claim URLs or auth status.
 
 For Drives:
