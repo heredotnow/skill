@@ -12,7 +12,7 @@ description: >
   team and serve at {label}.{workspace}.here.now — use when asked to
   "publish this to our team workspace", "share this with my team", or
   "put this in our company workspace".
-version: 1.20.0
+version: 1.21.0
 author: here.now
 license: MIT
 prerequisites:
@@ -27,7 +27,7 @@ metadata:
 
 # here.now
 
-**Skill version: 1.20.0**
+**Skill version: 1.21.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -160,15 +160,16 @@ Use scoped Drive tokens for agent-to-agent handoff. If you receive a `herenow_dr
 
 ## Client attribution
 
-Pass `--client` so here.now can track reliability by agent:
+Pass `--client` with the name of the **agent product or harness you are running in** — for Hermes, that is always `hermes`:
 
 ```bash
 PUBLISH="${HERMES_SKILL_DIR}/scripts/publish.sh"
 bash "$PUBLISH" {file-or-dir} --client hermes
 ```
 
-This sends `X-HereNow-Client: hermes/publish-sh` on publish API calls.
-If omitted, the script sends a fallback value.
+This sends `X-HereNow-Client: hermes/publish-sh` on publish API calls. If omitted, the script sends a fallback value.
+
+Use the platform's name, **not** a bot, persona, sub-agent, project, or thread name inside it. To record your instance name too, append it after a slash: `--client hermes/research-bot`.
 
 ## API key storage
 
@@ -264,7 +265,7 @@ For Drives:
 | `--title {text}`       | Viewer title (non-HTML sites)             |
 | `--description {text}` | Viewer description                            |
 | `--ttl {seconds}`      | Set expiry (authenticated only)               |
-| `--client {name}`      | Agent name for attribution (e.g. `cursor`)    |
+| `--client {name}`      | Agent harness for attribution — the platform you run in (`hermes` here), not your bot/persona name; optionally append it: `hermes/research-bot` |
 | `--base-url {url}`     | API base URL (default: `https://here.now`)    |
 | `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
 | `--api-key {key}`      | API key override (prefer credentials file)    |

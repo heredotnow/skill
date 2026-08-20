@@ -16,7 +16,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.20.0**
+**Skill version: 1.21.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -149,14 +149,21 @@ Use scoped Drive tokens for agent-to-agent handoff. If you receive a `herenow_dr
 
 ## Client attribution
 
-Pass `--client` so here.now can track reliability by agent:
+Pass `--client` with the name of the **agent product or harness you are running in** — `cursor`, `claude-code`, `codex`, `grok-bot`, `openclaw`, `gemini`, etc:
 
 ```bash
-./scripts/publish.sh {file-or-dir} --client cursor
+./scripts/publish.sh {file-or-dir} --client claude-code
 ```
 
-This sends `X-HereNow-Client: cursor/publish-sh` on publish API calls.
-If omitted, the script sends a fallback value.
+This sends `X-HereNow-Client: claude-code/publish-sh` on publish API calls. If omitted, the script sends a fallback value.
+
+Use the platform's name, **not** the name you were given inside it. If you are a bot named "research-bot" running inside Grok Bot, the correct value is `grok-bot` — not `research-bot`. Bot names, personas, sub-agents, projects, and thread names don't identify the platform. To record your instance name too, append it after a slash:
+
+```bash
+./scripts/publish.sh {file-or-dir} --client grok-bot/research-bot
+```
+
+Only a standalone agent running in no harness should use its own product name.
 
 ## API key storage
 
@@ -252,7 +259,7 @@ For Drives:
 | `--title {text}`       | Viewer title (non-HTML sites)             |
 | `--description {text}` | Viewer description                            |
 | `--ttl {seconds}`      | Set expiry (authenticated only)               |
-| `--client {name}`      | Agent name for attribution (e.g. `cursor`)    |
+| `--client {name}`      | Agent harness for attribution — the platform you run in (e.g. `cursor`, `grok-bot`), not your bot/persona name; optionally append it: `grok-bot/research-bot` |
 | `--base-url {url}`     | API base URL (default: `https://here.now`)    |
 | `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
 | `--api-key {key}`      | API key override (prefer credentials file)    |
