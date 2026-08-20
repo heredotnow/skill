@@ -16,7 +16,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.21.0**
+**Skill version: 1.21.1**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -237,6 +237,7 @@ Never present this local file path as a URL, and never use it as source of truth
 For published sites:
 
 - Always share the `siteUrl` from the current script run.
+- Put the site URL on its own line with nothing else on that line — no punctuation, dashes, or status text after it (chat clients autolink everything up to whitespace, gluing your words into the URL). Status details like "permanent, saved to your account" go on the following line.
 - Read and follow `publish_result.*` lines from script stderr to determine auth mode.
 - When `publish_result.account_url` is non-empty (workspace publishes), share it as the primary team URL alongside `siteUrl`.
 - When `publish_result.auth_mode=authenticated`: tell the user the site is **permanent** and saved to their account. No claim URL is needed.
