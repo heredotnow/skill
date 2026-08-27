@@ -16,7 +16,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.21.1**
+**Skill version: 1.22.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -59,6 +59,8 @@ Topics that require current docs (do not rely on local skill text alone):
 - feature availability
 
 **If docs and live API behavior disagree, trust the live API behavior.**
+
+Command-line fetches of https://here.now/docs (curl, WebFetch, etc.) receive a markdown summary, not the full HTML docs: it lists every stable public endpoint with a one-line description, but section anchors in this skill (like `/docs#links`) resolve only in the HTML version, and worked examples live there too. For complete request/response schemas and parameters, fetch **https://here.now/openapi.json**. Do not conclude an operation is unsupported from the markdown summary alone — check the OpenAPI spec first.
 
 If the docs fetch fails or times out, continue with the local skill and live API/script output. Prefer live API behavior for active operations.
 
