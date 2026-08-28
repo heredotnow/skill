@@ -12,7 +12,7 @@ description: >
   team and serve at {label}.{workspace}.here.now — use when asked to
   "publish this to our team workspace", "share this with my team", or
   "put this in our company workspace".
-version: 1.23.0
+version: 1.24.0
 author: here.now
 license: MIT
 prerequisites:
@@ -27,7 +27,7 @@ metadata:
 
 # here.now
 
-**Skill version: 1.23.0**
+**Skill version: 1.24.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -137,7 +137,7 @@ A Site uses one access mode at a time:
 - **password**: visitors must enter a shared password.
 - **restricted**: invite-only; only verified email addresses or email domains the owner allows can view.
 
-Workspace-owned Sites use a different set of modes: **account_members** (the default — visitors sign in and must be workspace members) or public, optionally with a password. `restricted` allowlists are personal-Site-only and return `409 workspace_access_mode_unsupported` on workspace Sites. See https://here.now/docs#workspace-access.
+Workspace-owned Sites default to **account_members** (visitors sign in and must be workspace members) and also support public, public with a password, and **restricted**. On a workspace Site, `restricted` means workspace members plus a per-Site guest allowlist: members always have access, and allowlisted emails/domains are outside guests who can view only that Site — they never become workspace members, though the Site appears in the guest's own dashboard as a shared Site. Workspace restricted requires at least one guest email or domain — an empty allowlist is rejected with a 400 (use `account_members` for members-only). See https://here.now/docs#workspace-access.
 
 Manage access with `GET`/`PATCH /api/v1/publish/{slug}/access` (passwords via the metadata endpoint). Restricted access requires a claimed Site. The PATCH replaces the full allowlists — read, merge, then write. Before working with access control, read the current docs:
 
