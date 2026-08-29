@@ -74,6 +74,16 @@ If the docs fetch fails or times out, continue with the local skill and live API
   - `./scripts/publish.sh` for publishing sites
   - `./scripts/drive.sh` for private Drive storage
 
+## If the helper scripts aren't installed
+
+Some environments receive this document without the bundled `scripts/` directory (for example, hosted platform integrations that provide only `$HERENOW_API_KEY`). In that case, either install the full bundle first:
+
+```bash
+npx skills add heredotnow/skill --skill here-now -g
+```
+
+or call the API directly — every script workflow in this document is a wrapper over the public API. Publishing is a three-step flow: `POST /api/v1/publish` with a `files` array (`[{path, size}]`) returns presigned upload targets, `PUT` each file's bytes to its returned URL, then `POST` the returned `finalizeUrl`. The site is not live until finalize succeeds. Full walkthrough with request/response examples: https://here.now/docs#create (then #upload and #finalize), machine-readable schemas: https://here.now/openapi.json.
+
 ## Create a site
 
 ```bash
