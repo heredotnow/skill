@@ -16,7 +16,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.24.0**
+**Skill version: 1.25.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 

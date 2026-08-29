@@ -12,7 +12,7 @@ description: >
   team and serve at {label}.{workspace}.here.now — use when asked to
   "publish this to our team workspace", "share this with my team", or
   "put this in our company workspace".
-version: 1.24.0
+version: 1.25.0
 author: here.now
 license: MIT
 prerequisites:
@@ -27,7 +27,7 @@ metadata:
 
 # here.now
 
-**Skill version: 1.24.0**
+**Skill version: 1.25.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
