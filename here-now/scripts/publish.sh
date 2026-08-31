@@ -20,6 +20,8 @@ TARGET=""
 SPA_MODE=""
 FROM_DRIVE=""
 DRIVE_VERSION=""
+OVERWRITE=0
+BASE_VERSION_ID=""
 
 usage() {
   cat <<'USAGE'
@@ -34,6 +36,7 @@ Options:
   --description <text>    Viewer description
   --ttl <seconds>         Expiry (authenticated only)
   --client <name>         Agent name for attribution (e.g. cursor, claude-code)
+  --overwrite             Skip the stale-base check when updating (see below)
   --spa                   Enable SPA routing
   --from-drive <drv_...>  Publish a Drive snapshot instead of local files
   --version <dv_...>      Drive version for --from-drive (default: current head)
@@ -45,6 +48,23 @@ USAGE
 }
 
 die() { echo "error: $1" >&2; exit 1; }
+
+# Prints an actionable version_conflict report and exits. $1 = response JSON.
+die_version_conflict() {
+  local resp="$1"
+  local msg cur src at
+  msg=$(echo "$resp" | "$JQ_BIN" -r '.message // .error')
+  cur=$(echo "$resp" | "$JQ_BIN" -r '.details.currentVersionId // empty')
+  src=$(echo "$resp" | "$JQ_BIN" -r '.details.currentVersionSource // empty')
+  at=$(echo "$resp" | "$JQ_BIN" -r '.details.currentVersionCreatedAt // empty')
+  echo "error: $msg" >&2
+  [[ -n "$cur" ]] && echo "live version: $cur${src:+ (created by $src)}${at:+ at $at}" >&2
+  echo "publish_result.conflict=version_conflict" >&2
+  echo "The live Site changed since this directory last published it." >&2
+  echo "Options: fetch the live Site and reconcile your local files first," >&2
+  echo "or re-run with --overwrite to replace the live version anyway." >&2
+  exit 1
+}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -74,6 +94,7 @@ while [[ $# -gt 0 ]]; do
     --client)       CLIENT="$2"; shift 2 ;;
     --base-url)     BASE_URL="$2"; shift 2 ;;
     --allow-nonherenow-base-url) ALLOW_NON_HERENOW_BASE_URL=1; shift ;;
+    --overwrite)    OVERWRITE=1; shift ;;
     --spa)          SPA_MODE="true"; shift ;;
     --from-drive)   FROM_DRIVE="$2"; shift 2 ;;
     --version)      DRIVE_VERSION="$2"; shift 2 ;;
@@ -166,6 +187,28 @@ if [[ -n "$FROM_DRIVE" ]]; then
   echo "publish_result.drive_version_id=$DRIVE_VERSION_OUT" >&2
   echo "publish_result.current_version_id=$CURRENT_VERSION" >&2
   exit 0
+fi
+
+# Absolute source path: scopes the saved base version to slug + source path,
+# so publishing a different directory to the same slug never falsely claims
+# its files are current.
+if [[ -f "$TARGET" ]]; then
+  TARGET_ABS="$(cd "$(dirname "$TARGET")" && pwd)/$(basename "$TARGET")"
+else
+  TARGET_ABS="$(cd "$TARGET" && pwd)"
+fi
+
+# Optimistic concurrency (https://here.now/docs#update): when updating a slug
+# this state file has published before from this same source path, declare
+# that version as the base. The server rejects the update (version_conflict)
+# if the live site moved past it — e.g. it was edited from another tool.
+# --overwrite skips the check (an unchecked full replacement).
+if [[ -n "$SLUG" && "$OVERWRITE" -ne 1 && -f "$STATE_FILE" ]]; then
+  stored_version=$("$JQ_BIN" -r --arg s "$SLUG" '.publishes[$s].versionId // empty' "$STATE_FILE" 2>/dev/null || true)
+  stored_path=$("$JQ_BIN" -r --arg s "$SLUG" '.publishes[$s].path // empty' "$STATE_FILE" 2>/dev/null || true)
+  if [[ -n "$stored_version" && -n "$stored_path" && "$stored_path" == "$TARGET_ABS" ]]; then
+    BASE_VERSION_ID="$stored_version"
+  fi
 fi
 
 compute_sha256() {
@@ -266,6 +309,10 @@ if [[ "$SPA_MODE" == "true" ]]; then
   BODY=$(echo "$BODY" | "$JQ_BIN" '.spaMode = true')
 fi
 
+if [[ -n "$BASE_VERSION_ID" ]]; then
+  BODY=$(echo "$BODY" | "$JQ_BIN" --arg v "$BASE_VERSION_ID" '.baseVersionId = $v')
+fi
+
 # Determine endpoint and method
 if [[ -n "$SLUG" ]]; then
   URL="$BASE_URL/api/v1/publish/$SLUG"
@@ -315,6 +362,9 @@ RESPONSE=$(curl -sS -X "$METHOD" "$URL" \
 
 # Check for errors
 if echo "$RESPONSE" | "$JQ_BIN" -e '.error' >/dev/null 2>&1; then
+  if [[ "$(echo "$RESPONSE" | "$JQ_BIN" -r '.code // empty')" == "version_conflict" ]]; then
+    die_version_conflict "$RESPONSE"
+  fi
   err=$(echo "$RESPONSE" | "$JQ_BIN" -r '.error')
   details=$(echo "$RESPONSE" | "$JQ_BIN" -r '.details // empty')
   die "$err${details:+ ($details)}"
@@ -382,11 +432,15 @@ FIN_RESPONSE=$(curl -sS -X POST "$FINALIZE_URL" \
   -d "{\"versionId\":\"$VERSION_ID\"}")
 
 if echo "$FIN_RESPONSE" | "$JQ_BIN" -e '.error' >/dev/null 2>&1; then
+  if [[ "$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.code // empty')" == "version_conflict" ]]; then
+    die_version_conflict "$FIN_RESPONSE"
+  fi
   err=$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.error')
   die "finalize failed: $err"
 fi
 
-# Save state
+# Save state. Merge into the existing entry (never replace it wholesale) so
+# a previously saved claimToken survives authenticated republishes.
 mkdir -p "$STATE_DIR"
 if [[ -f "$STATE_FILE" ]]; then
   STATE=$(cat "$STATE_FILE")
@@ -394,7 +448,16 @@ else
   STATE='{"publishes":{}}'
 fi
 
-entry=$("$JQ_BIN" -n --arg s "$SITE_URL" '{siteUrl: $s}')
+entry=$(echo "$STATE" | "$JQ_BIN" --arg s "$OUT_SLUG" '.publishes[$s] // {}')
+entry=$(echo "$entry" | "$JQ_BIN" --arg v "$SITE_URL" '.siteUrl = $v')
+
+# The live version after this publish comes from the finalize response's
+# currentVersionId — a byte-identical republish keeps the previous live
+# version (unchanged:true), so the staged upload versionId must never be
+# saved as the base.
+LIVE_VERSION_ID=$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.currentVersionId // empty')
+[[ -n "$LIVE_VERSION_ID" ]] && entry=$(echo "$entry" | "$JQ_BIN" --arg v "$LIVE_VERSION_ID" '.versionId = $v')
+entry=$(echo "$entry" | "$JQ_BIN" --arg v "$TARGET_ABS" '.path = $v')
 
 RESPONSE_CLAIM_TOKEN=$(echo "$RESPONSE" | "$JQ_BIN" -r '.claimToken // empty')
 RESPONSE_CLAIM_URL=$(echo "$RESPONSE" | "$JQ_BIN" -r '.claimUrl // empty')
@@ -443,6 +506,7 @@ echo "publish_result.persistence=$PERSISTENCE" >&2
 echo "publish_result.expires_at=$RESPONSE_EXPIRES" >&2
 echo "publish_result.claim_url=$SAFE_CLAIM_URL" >&2
 echo "publish_result.account_url=$ACCOUNT_URL" >&2
+echo "publish_result.live_version_id=$LIVE_VERSION_ID" >&2
 
 if [[ "$AUTH_MODE" == "authenticated" ]]; then
   echo "authenticated publish (permanent, saved to your account)" >&2

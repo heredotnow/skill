@@ -16,7 +16,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.25.0**
+**Skill version: 1.26.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -110,6 +110,8 @@ You can also publish raw files without any HTML. Single files get a rich auto-vi
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
 
 Authenticated updates require a saved API key.
+
+**Stale-base protection.** The live Site may have changed since your local files were published — the owner can edit it from other tools (another agent, the here.now Studio, a teammate). The script records the live `versionId` in `.herenow/state.json` after each publish and sends it as `baseVersionId` on the next update of the same slug from the same directory; if the live Site moved past it, the update is rejected with `code: "version_conflict"` naming the live version and what created it. When that happens, relay the message to the user and offer to (a) fetch the current Site and reconcile local files before republishing, or (b) re-run with `--overwrite` to replace the live version anyway. Before editing local files for an authenticated Site you haven't touched recently, it's cheap to check for drift first: `GET /api/v1/publish/{slug}` returns `currentVersionId` — if it differs from your state file's `versionId`, fetch the live files before editing. Anonymous Sites can't call that endpoint; they rely on the saved state and server enforcement. Omitting `baseVersionId` (or using `--overwrite`) is an unchecked full replacement — today's default for raw API callers.
 
 Every publish records an immutable version. If the user asks to see earlier versions of a Site, undo a publish, or roll back: list history with `GET /api/v1/publish/{slug}/versions` and restore instantly with `POST /api/v1/publish/{slug}/versions/{versionId}/restore` (restoring keeps the current access mode, password, and domains). Version access requires a paid plan and is included for workspace Sites; free accounts' history is recorded and unlocks on upgrade. A byte-identical republish returns `unchanged: true` from finalize instead of creating a new version. See https://here.now/docs#versions.
 
@@ -269,6 +271,7 @@ For Drives:
 | `--slug {slug}`        | Update an existing site instead of creating |
 | `--workspace {subdomain}` | Publish into a workspace (team account) you belong to |
 | `--claim-token {token}`| Override claim token for anonymous updates    |
+| `--overwrite`          | Skip the stale-base check and replace the live version |
 | `--title {text}`       | Viewer title (non-HTML sites)             |
 | `--description {text}` | Viewer description                            |
 | `--ttl {seconds}`      | Set expiry (authenticated only)               |
