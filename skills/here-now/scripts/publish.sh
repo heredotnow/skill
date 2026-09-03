@@ -61,7 +61,9 @@ die_version_conflict() {
   [[ -n "$cur" ]] && echo "live version: $cur${src:+ (created by $src)}${at:+ at $at}" >&2
   echo "publish_result.conflict=version_conflict" >&2
   echo "The live Site changed since this directory last published it." >&2
-  echo "Options: fetch the live Site and reconcile your local files first," >&2
+  echo "Options: read the live files and reconcile your local copy first" >&2
+  echo "  (GET ${BASE_URL}/api/v1/publish/${SLUG}/files lists them; GET .../files/{path} returns each," >&2
+  echo "  with your API key, no visitor password needed), then republish;" >&2
   echo "or re-run with --overwrite to replace the live version anyway." >&2
   exit 1
 }
