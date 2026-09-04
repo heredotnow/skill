@@ -1,17 +1,6 @@
 ---
 name: here-now
-description: >
-  here.now lets agents publish websites and files to live URLs in seconds.
-  Publish HTML, documents, images, PDFs, videos, and static files to live
-  URLs at {slug}.here.now or custom domains. Use when asked to "publish
-  this", "host this", "deploy this", "share this on the web", "make a
-  website", "put this online", "create a webpage", "generate a URL",
-  "build a chatbot", "password protect this site", "make this site
-  private", or "share this site with only certain people". here.now also
-  includes workspaces — shared team accounts where Sites belong to the
-  team and serve at {label}.{workspace}.here.now — use when asked to
-  "publish this to our team workspace", "share this with my team", or
-  "put this in our company workspace".
+description: Publish websites and files to secure live URLs.
 ---
 
 # here.now
@@ -23,6 +12,16 @@ here.now lets agents publish websites and files to live URLs in seconds.
 The core primitive is a **Site**: publish a file or folder and get a live URL at `{slug}.here.now` or a custom domain. Every Site has access control: public link (default), password, or restricted invite-only access.
 
 here.now also includes **workspaces** — shared team accounts where Sites belong to the team and serve at `{label}.{workspace}.here.now` (see "Publish to a workspace" below).
+
+## When to Use
+
+Use this skill when the user asks to:
+
+- "publish this", "host this", "deploy this", or "share this on the web"
+- "make a website", "put this online", "create a webpage", or "generate a URL"
+- "build a chatbot"
+- "password protect this site", "make this site private", or "share this site with only certain people"
+- "publish this to our team workspace", "share this with my team", or "put this in our company workspace"
 
 To install or update (recommended): `npx skills add heredotnow/skill --skill here-now -g`
 
