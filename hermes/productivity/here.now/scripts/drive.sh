@@ -218,8 +218,10 @@ put_file() {
   upload=$(api_json POST "$BASE_URL/api/v1/drives/$id/files/uploads" "$body")
   upload_url=$(echo "$upload" | "$JQ_BIN" -r '.uploadUrl')
   upload_id=$(echo "$upload" | "$JQ_BIN" -r '.uploadId')
-  http_code=$(curl -sS -o /dev/null -w "%{http_code}" -X PUT "$upload_url" -H "Content-Type: $ct" --data-binary "@$local_file")
-  [[ "$http_code" -ge 200 && "$http_code" -lt 300 ]] || die "upload failed for $path (HTTP $http_code)"
+  # `|| http_code=000`: a connection-level failure would otherwise exit the
+  # script under set -e with only curl's message, before the hint below.
+  http_code=$(curl -sS -o /dev/null -w "%{http_code}" -X PUT "$upload_url" -H "Content-Type: $ct" --data-binary "@$local_file") || http_code="000"
+  [[ "$http_code" -ge 200 && "$http_code" -lt 300 ]] || die "upload failed for $path (HTTP $http_code). The upload URL PUTs directly to *.r2.cloudflarestorage.com, not to here.now; if this environment restricts outbound network access, allow that host as well as here.now."
   api_json POST "$BASE_URL/api/v1/drives/$id/files/finalize" "$("$JQ_BIN" -n --arg u "$upload_id" '{uploadId:$u}')" | "$JQ_BIN" .
 }
 

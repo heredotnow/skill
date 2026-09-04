@@ -388,6 +388,7 @@ else
   echo "uploading $UPLOAD_COUNT files..." >&2
 fi
 upload_errors=0
+upload_network_failures=0
 
 # C-style loop: BSD seq counts DOWN for `seq 0 -1`, so a zero-upload
 # republish (all files unchanged) used to iterate twice with null paths
@@ -412,17 +413,30 @@ for ((i = 0; i < UPLOAD_COUNT; i++)); do
   ct_args=()
   [[ -n "$upload_ct" ]] && ct_args=(-H "Content-Type: $upload_ct")
 
+  # `|| http_code=000`: a connection-level failure (proxy refusing CONNECT,
+  # DNS, TLS) exits curl non-zero, which under set -e would kill the script
+  # here with only curl's own message. Fall through so the count and the
+  # hint below are reached.
   http_code=$(curl -sS -o /dev/null -w "%{http_code}" -X PUT "$upload_url" \
     "${ct_args[@]+"${ct_args[@]}"}" \
-    --data-binary "@$local_file")
+    --data-binary "@$local_file") || http_code="000"
 
   if [[ "$http_code" -lt 200 || "$http_code" -ge 300 ]]; then
     echo "warning: upload failed for $upload_path (HTTP $http_code)" >&2
     upload_errors=$((upload_errors + 1))
+    upload_network_failures=$((upload_network_failures + 1))
   fi
 done
 
-[[ "$upload_errors" -eq 0 ]] || die "$upload_errors file(s) failed to upload"
+if [[ "$upload_errors" -gt 0 ]]; then
+  # Every PUT failed while the create call succeeded: the usual cause is an
+  # egress allowlist that permits here.now but not the storage host.
+  if [[ "$UPLOAD_COUNT" -gt 0 && "$upload_network_failures" -eq "$UPLOAD_COUNT" ]]; then
+    echo "hint: every upload failed. Upload URLs PUT directly to *.r2.cloudflarestorage.com, not to here.now;" >&2
+    echo "      if this environment restricts outbound network access, allow that host as well as here.now." >&2
+  fi
+  die "$upload_errors file(s) failed to upload"
+fi
 
 # Step 3: Finalize
 echo "finalizing..." >&2

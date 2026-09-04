@@ -16,7 +16,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.27.0**
+**Skill version: 1.28.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -67,6 +67,7 @@ If the docs fetch fails or times out, continue with the local skill and live API
 ## Requirements
 
 - Required binaries: `curl`, `file`, `jq`
+- Required network access: `https://here.now` (API) and `https://*.r2.cloudflarestorage.com` (file uploads PUT directly to storage; the exact host is in each upload URL). In a sandbox or behind a proxy with an egress allowlist, allow BOTH hosts. With only `here.now` allowed, the create call succeeds, every upload fails, and finalize reports missing files.
 - Optional environment variable: `$HERENOW_API_KEY`
 - Optional Drive token variable: `$HERENOW_DRIVE_TOKEN`
 - Optional credentials file: `~/.herenow/credentials`
