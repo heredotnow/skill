@@ -1,17 +1,6 @@
 ---
 name: here-now
-description: >
-  here.now lets agents publish websites and files to live URLs in seconds.
-  Publish HTML, documents, images, PDFs, videos, and static files to live
-  URLs at {slug}.here.now or custom domains. Use when asked to "publish
-  this", "host this", "deploy this", "share this on the web", "make a
-  website", "put this online", "create a webpage", "generate a URL",
-  "build a chatbot", "password protect this site", "make this site
-  private", or "share this site with only certain people". here.now also
-  includes workspaces — shared team accounts where Sites belong to the
-  team and serve at {label}.{workspace}.here.now — use when asked to
-  "publish this to our team workspace", "share this with my team", or
-  "put this in our company workspace".
+description: "Publish or manage sites and files on here.now when hosting or sharing a live URL is intended. Not for local-only page/chatbot creation or another named host. Honor explicit here-now invocation."
 ---
 
 # here.now
