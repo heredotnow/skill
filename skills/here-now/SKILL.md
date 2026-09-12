@@ -11,12 +11,14 @@ description: >
   includes workspaces — shared team accounts where Sites belong to the
   team and serve at {label}.{workspace}.here.now — use when asked to
   "publish this to our team workspace", "share this with my team", or
-  "put this in our company workspace".
+  "put this in our company workspace". Agents can also buy a domain for a
+  Site through here.now (no markup, DNS and SSL automatic) — use when asked
+  to "buy a domain", "get me a .com for this", or "register a domain".
 ---
 
 # here.now
 
-**Skill version: 1.28.1**
+**Skill version: 1.29.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -47,6 +49,7 @@ Topics that require current docs (do not rely on local skill text alone):
 - workspaces (team accounts, membership, label URLs)
 - Drives and Drive sharing
 - custom domains
+- buying a domain (search and quote first; state the price and the renewal price and get the user's explicit yes before calling purchase — purchases are final; see https://here.now/docs#buy-domain)
 - Site Data
 - public profiles
 - proxy routes and service variables
