@@ -492,6 +492,13 @@ if [[ -z "$ACCOUNT_URL" ]]; then
   ACCOUNT_URL=$(echo "$RESPONSE" | "$JQ_BIN" -r '.accountUrl // empty')
 fi
 
+# Preferred address (finalize response preferred; create response fallback).
+# Present for Sites served on a partner harness's domain; empty otherwise.
+PRIMARY_URL=$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.primaryUrl // empty')
+if [[ -z "$PRIMARY_URL" ]]; then
+  PRIMARY_URL=$(echo "$RESPONSE" | "$JQ_BIN" -r '.primaryUrl // empty')
+fi
+
 # Output
 echo "$SITE_URL"
 
@@ -522,6 +529,7 @@ echo "publish_result.persistence=$PERSISTENCE" >&2
 echo "publish_result.expires_at=$RESPONSE_EXPIRES" >&2
 echo "publish_result.claim_url=$SAFE_CLAIM_URL" >&2
 echo "publish_result.account_url=$ACCOUNT_URL" >&2
+echo "publish_result.primary_url=$PRIMARY_URL" >&2
 echo "publish_result.live_version_id=$LIVE_VERSION_ID" >&2
 
 if [[ "$AUTH_MODE" == "authenticated" ]]; then

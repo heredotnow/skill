@@ -18,7 +18,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.29.0**
+**Skill version: 1.30.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -258,6 +258,7 @@ For published sites:
 - Put the site URL on its own line with nothing else on that line — no punctuation, dashes, or status text after it (chat clients autolink everything up to whitespace, gluing your words into the URL). Status details like "permanent, saved to your account" go on the following line.
 - Read and follow `publish_result.*` lines from script stderr to determine auth mode.
 - When `publish_result.account_url` is non-empty (workspace publishes), share it as the primary team URL alongside `siteUrl`.
+- When `publish_result.primary_url` is non-empty, share it first; `siteUrl` stays valid.
 - When `publish_result.auth_mode=authenticated`: tell the user the site is **permanent** and saved to their account. No claim URL is needed.
 - When `publish_result.auth_mode=anonymous`: tell the user the site **expires in 24 hours**. Share the claim URL (if `publish_result.claim_url` is non-empty and starts with `https://`) so they can keep it permanently. Copy it byte-for-byte as a clickable link — never shorten, redact, summarize, or replace any part of it with `...`; a modified claim link will not work. Warn that claim tokens are only returned once and cannot be recovered.
 - Never tell the user to inspect `.herenow/state.json` for claim URLs or auth status.
