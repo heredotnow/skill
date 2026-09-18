@@ -14,7 +14,7 @@ description: >
   "put this in our company workspace". Agents can also buy a domain for a
   Site through here.now (no markup, DNS and SSL automatic) — use when asked
   to "buy a domain", "get me a .com for this", or "register a domain".
-version: 1.30.0
+version: 1.31.0
 author: here.now
 license: MIT
 prerequisites:
@@ -29,13 +29,15 @@ metadata:
 
 # here.now
 
-**Skill version: 1.30.0**
+**Skill version: 1.31.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
 The core primitive is a **Site**: publish a file or folder and get a live URL at `{slug}.here.now` or a custom domain. Every Site has access control: public link (default), password, or restricted invite-only access.
 
 here.now also includes **workspaces** — shared team accounts where Sites belong to the team and serve at `{label}.{workspace}.here.now` (see "Publish to a workspace" below).
+
+A personal account on a paid plan can turn on a **vanity URL**: the user's name at `{name}.here.now`, and from then on every Site they publish (including through you) also serves at a readable `{site-name}.{name}.here.now` address, named from its title. When a user wants every Site under their own name, `PUT /api/v1/vanity-urls/subdomain` with `{"subdomain": "name"}` turns it on; for one Site at one hostname they choose, use a custom domain; for Sites owned by a team, use a workspace. Finalize responses carry `primaryUrl` and `urls[]` (best first); mention `primaryUrl` when it differs from `siteUrl`. See https://here.now/docs#vanity-urls.
 
 ## Current docs
 
@@ -56,6 +58,7 @@ Topics that require current docs (do not rely on local skill text alone):
 - workspaces (team accounts, membership, label URLs)
 - Drives and Drive sharing
 - custom domains
+- vanity URLs (`{site-name}.{name}.here.now`; see https://here.now/docs#vanity-urls)
 - buying a domain (search and quote first; state the price and the renewal price and get the user's explicit yes before calling purchase — purchases are final; see https://here.now/docs#buy-domain)
 - Site Data
 - public profiles
