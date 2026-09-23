@@ -22,6 +22,7 @@ FROM_DRIVE=""
 DRIVE_VERSION=""
 OVERWRITE=0
 BASE_VERSION_ID=""
+FOLDER=""
 
 usage() {
   cat <<'USAGE'
@@ -34,6 +35,7 @@ Options:
   --claim-token <token>   Claim token for anonymous updates
   --title <text>          Viewer title
   --description <text>    Viewer description
+  --folder <name|id>      File the Site in a dashboard folder (a name is created if missing; authenticated only)
   --ttl <seconds>         Expiry (authenticated only)
   --client <name>         Agent name for attribution (e.g. cursor, claude-code)
   --overwrite             Skip the stale-base check when updating (see below)
@@ -92,6 +94,7 @@ while [[ $# -gt 0 ]]; do
     --claim-token)  CLAIM_TOKEN="$2"; shift 2 ;;
     --title)        TITLE="$2"; shift 2 ;;
     --description)  DESCRIPTION="$2"; shift 2 ;;
+    --folder)       FOLDER="$2"; shift 2 ;;
     --ttl)          TTL="$2"; shift 2 ;;
     --client)       CLIENT="$2"; shift 2 ;;
     --base-url)     BASE_URL="$2"; shift 2 ;;
@@ -130,6 +133,12 @@ if [[ -n "$WORKSPACE" ]]; then
   [[ -z "$FROM_DRIVE" ]] || die "--workspace cannot be combined with --from-drive"
 fi
 
+# Folders belong to an account (docs: https://here.now/docs#folders), so an
+# anonymous Site has nowhere to be filed.
+if [[ -n "$FOLDER" ]]; then
+  [[ -n "$API_KEY" ]] || die "--folder requires an account API key (anonymous Sites cannot be filed in folders)"
+fi
+
 # Safety guard: avoid accidentally sending bearer auth to arbitrary endpoints.
 if [[ -n "$API_KEY" && "$BASE_URL" != "https://here.now" && "$ALLOW_NON_HERENOW_BASE_URL" -ne 1 ]]; then
   die "refusing to send API key to non-default base URL; pass --allow-nonherenow-base-url to override"
@@ -153,6 +162,7 @@ if [[ -n "$FROM_DRIVE" ]]; then
     BODY=$(echo "$BODY" | "$JQ_BIN" --argjson v "$viewer" '.viewer = $v')
   fi
   [[ "$SPA_MODE" == "true" ]] && BODY=$(echo "$BODY" | "$JQ_BIN" '.spaMode = true')
+  [[ -n "$FOLDER" ]] && BODY=$(echo "$BODY" | "$JQ_BIN" --arg f "$FOLDER" '.folder = $f')
   CLIENT_HEADER_VALUE="here-now-publish-sh"
   if [[ -n "$CLIENT" ]]; then
     normalized_client=$(echo "$CLIENT" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-')
@@ -177,6 +187,7 @@ if [[ -n "$FROM_DRIVE" ]]; then
   OUT_SLUG=$(echo "$RESPONSE" | "$JQ_BIN" -r '.slug')
   CURRENT_VERSION=$(echo "$RESPONSE" | "$JQ_BIN" -r '.currentVersionId')
   DRIVE_VERSION_OUT=$(echo "$RESPONSE" | "$JQ_BIN" -r '.driveVersionId')
+  FOLDER_OUT=$(echo "$RESPONSE" | "$JQ_BIN" -r '.folder.name // empty')
   echo "$SITE_URL"
   echo "" >&2
   echo "publish_result.site_url=$SITE_URL" >&2
@@ -188,6 +199,7 @@ if [[ -n "$FROM_DRIVE" ]]; then
   echo "publish_result.drive_id=$FROM_DRIVE" >&2
   echo "publish_result.drive_version_id=$DRIVE_VERSION_OUT" >&2
   echo "publish_result.current_version_id=$CURRENT_VERSION" >&2
+  echo "publish_result.folder=$FOLDER_OUT" >&2
   exit 0
 fi
 
@@ -309,6 +321,10 @@ fi
 
 if [[ "$SPA_MODE" == "true" ]]; then
   BODY=$(echo "$BODY" | "$JQ_BIN" '.spaMode = true')
+fi
+
+if [[ -n "$FOLDER" ]]; then
+  BODY=$(echo "$BODY" | "$JQ_BIN" --arg f "$FOLDER" '.folder = $f')
 fi
 
 if [[ -n "$BASE_VERSION_ID" ]]; then
@@ -499,6 +515,10 @@ if [[ -z "$PRIMARY_URL" ]]; then
   PRIMARY_URL=$(echo "$RESPONSE" | "$JQ_BIN" -r '.primaryUrl // empty')
 fi
 
+# The Site's dashboard folder after this publish (create/update response);
+# empty at the root.
+FOLDER_OUT=$(echo "$RESPONSE" | "$JQ_BIN" -r '.folder.name // empty')
+
 # Output
 echo "$SITE_URL"
 
@@ -531,6 +551,7 @@ echo "publish_result.claim_url=$SAFE_CLAIM_URL" >&2
 echo "publish_result.account_url=$ACCOUNT_URL" >&2
 echo "publish_result.primary_url=$PRIMARY_URL" >&2
 echo "publish_result.live_version_id=$LIVE_VERSION_ID" >&2
+echo "publish_result.folder=$FOLDER_OUT" >&2
 
 if [[ "$AUTH_MODE" == "authenticated" ]]; then
   echo "authenticated publish (permanent, saved to your account)" >&2

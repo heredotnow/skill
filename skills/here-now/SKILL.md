@@ -18,7 +18,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.31.0**
+**Skill version: 1.32.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -49,6 +49,7 @@ Topics that require current docs (do not rely on local skill text alone):
 
 - Site access control (passwords and restricted access)
 - workspaces (team accounts, membership, label URLs)
+- folders (organizing the user's dashboard; see https://here.now/docs#folders)
 - Drives and Drive sharing
 - custom domains
 - vanity URLs (`{site-name}.{name}.here.now`; see https://here.now/docs#vanity-urls)
@@ -151,6 +152,22 @@ Workspace-owned Sites default to **account_members** (visitors sign in and must 
 Manage access with `GET`/`PATCH /api/v1/publish/{slug}/access` (passwords via the metadata endpoint). Restricted access requires a claimed Site. The PATCH replaces the full allowlists — read, merge, then write. Before working with access control, read the current docs:
 
 → **https://here.now/docs#access-control**
+
+## Folders (organizing the user's dashboard)
+
+Signed-in users can group their Sites into **folders** in the here.now dashboard. A folder is a fact about the account, not the Site's address: flat (no nesting), one folder per Site, shared by every member of a workspace, invisible to visitors. Filing a Site changes nothing about its URL or access.
+
+When the user names a folder, project, or client for a Site ("publish this to my Reports folder", "file it under Acme"), file it as part of the publish:
+
+```bash
+./scripts/publish.sh {file-or-dir} --folder "Reports"
+```
+
+`--folder` takes a folder name or id. A name is matched case-insensitively and **created if it does not exist yet**, so this works the first time; the script reports the result as `publish_result.folder`. It requires an API key (anonymous Sites have no account to file in) and works with `--slug` (moves an existing Site) and `--workspace` (the workspace's folders).
+
+Without the script, the same field is `folder` on `POST /api/v1/publish`, `PUT /api/v1/publish/{slug}`, and `PATCH /api/v1/publish/{slug}/metadata` (the way to file a Site without publishing a new version; `"folder": null` moves it back to the root). `GET /api/v1/folders` lists the account's folders; `GET /api/v1/publishes?folder={name-or-id}` lists one folder's Sites. Rename and delete are `PATCH`/`DELETE /api/v1/folders/{id}` (deleting a folder unfiles its Sites and deletes nothing else). Up to 50 folders per account, names up to 60 characters.
+
+**Never invent folders or file Sites the user did not ask to file.** The folder structure is theirs; every folder appears as a tile in their dashboard. See https://here.now/docs#folders.
 
 ## Use a Drive
 
@@ -262,6 +279,7 @@ For published sites:
 - Read and follow `publish_result.*` lines from script stderr to determine auth mode.
 - When `publish_result.account_url` is non-empty (workspace publishes), share it as the primary team URL alongside `siteUrl`.
 - When `publish_result.primary_url` is non-empty, share it first; `siteUrl` stays valid.
+- When `publish_result.folder` is non-empty, mention that the Site is filed in that folder in their dashboard.
 - When `publish_result.auth_mode=authenticated`: tell the user the site is **permanent** and saved to their account. No claim URL is needed.
 - When `publish_result.auth_mode=anonymous`: tell the user the site **expires in 24 hours**. Share the claim URL (if `publish_result.claim_url` is non-empty and starts with `https://`) so they can keep it permanently. Copy it byte-for-byte as a clickable link — never shorten, redact, summarize, or replace any part of it with `...`; a modified claim link will not work. Warn that claim tokens are only returned once and cannot be recovered.
 - Never tell the user to inspect `.herenow/state.json` for claim URLs or auth status.
@@ -282,6 +300,7 @@ For Drives:
 | `--overwrite`          | Skip the stale-base check and replace the live version |
 | `--title {text}`       | Viewer title (non-HTML sites)             |
 | `--description {text}` | Viewer description                            |
+| `--folder {name-or-id}` | File the Site in a dashboard folder (a name is created if missing; authenticated only) |
 | `--ttl {seconds}`      | Set expiry (authenticated only)               |
 | `--client {name}`      | Agent harness for attribution — the platform you run in (e.g. `cursor`, `grok-bot`), not your bot/persona name; optionally append it: `grok-bot/research-bot` |
 | `--base-url {url}`     | API base URL (default: `https://here.now`)    |
