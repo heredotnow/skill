@@ -18,6 +18,7 @@ TTL=""
 CLIENT=""
 TARGET=""
 SPA_MODE=""
+CROSS_ORIGIN_ISOLATION=""
 FROM_DRIVE=""
 DRIVE_VERSION=""
 OVERWRITE=0
@@ -40,6 +41,8 @@ Options:
   --client <name>         Agent name for attribution (e.g. cursor, claude-code)
   --overwrite             Skip the stale-base check when updating (see below)
   --spa                   Enable SPA routing
+  --cross-origin-isolation
+                         Send COOP/COEP headers (threaded WebAssembly needs SharedArrayBuffer)
   --from-drive <drv_...>  Publish a Drive snapshot instead of local files
   --version <dv_...>      Drive version for --from-drive (default: current head)
   --base-url <url>        API base (default: https://here.now)
@@ -101,6 +104,7 @@ while [[ $# -gt 0 ]]; do
     --allow-nonherenow-base-url) ALLOW_NON_HERENOW_BASE_URL=1; shift ;;
     --overwrite)    OVERWRITE=1; shift ;;
     --spa)          SPA_MODE="true"; shift ;;
+    --cross-origin-isolation) CROSS_ORIGIN_ISOLATION="true"; shift ;;
     --from-drive)   FROM_DRIVE="$2"; shift 2 ;;
     --version)      DRIVE_VERSION="$2"; shift 2 ;;
     --help|-h)      usage ;;
@@ -162,6 +166,7 @@ if [[ -n "$FROM_DRIVE" ]]; then
     BODY=$(echo "$BODY" | "$JQ_BIN" --argjson v "$viewer" '.viewer = $v')
   fi
   [[ "$SPA_MODE" == "true" ]] && BODY=$(echo "$BODY" | "$JQ_BIN" '.spaMode = true')
+  [[ "$CROSS_ORIGIN_ISOLATION" == "true" ]] && BODY=$(echo "$BODY" | "$JQ_BIN" '.crossOriginIsolation = true')
   [[ -n "$FOLDER" ]] && BODY=$(echo "$BODY" | "$JQ_BIN" --arg f "$FOLDER" '.folder = $f')
   CLIENT_HEADER_VALUE="here-now-publish-sh"
   if [[ -n "$CLIENT" ]]; then
@@ -323,6 +328,10 @@ if [[ "$SPA_MODE" == "true" ]]; then
   BODY=$(echo "$BODY" | "$JQ_BIN" '.spaMode = true')
 fi
 
+if [[ "$CROSS_ORIGIN_ISOLATION" == "true" ]]; then
+  BODY=$(echo "$BODY" | "$JQ_BIN" '.crossOriginIsolation = true')
+fi
+
 if [[ -n "$FOLDER" ]]; then
   BODY=$(echo "$BODY" | "$JQ_BIN" --arg f "$FOLDER" '.folder = $f')
 fi
@@ -470,6 +479,13 @@ if echo "$FIN_RESPONSE" | "$JQ_BIN" -e '.error' >/dev/null 2>&1; then
   err=$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.error')
   die "finalize failed: $err"
 fi
+
+# Non-fatal finalize warnings (an invalid .herenow/proxy.json, a .wasm
+# module published without crossOriginIsolation, ...). One line each, in
+# the publish_result.* channel agents already read; the Site is live.
+while IFS= read -r warning_line; do
+  [[ -n "$warning_line" ]] && echo "publish_result.warning=$warning_line" >&2
+done < <(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '(.warnings // [])[]? | tostring' 2>/dev/null || true)
 
 # Save state. Merge into the existing entry (never replace it wholesale) so
 # a previously saved claimToken survives authenticated republishes.

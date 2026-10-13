@@ -14,7 +14,7 @@ description: >
   "put this in our company workspace". Agents can also buy a domain for a
   Site through here.now (no markup, DNS and SSL automatic) — use when asked
   to "buy a domain", "get me a .com for this", or "register a domain".
-version: 1.32.0
+version: 1.33.0
 author: here.now
 license: MIT
 prerequisites:
@@ -29,7 +29,7 @@ metadata:
 
 # here.now
 
-**Skill version: 1.32.0**
+**Skill version: 1.33.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -116,6 +116,8 @@ With a saved API key, the site is permanent.
 **File structure:** For HTML sites, place `index.html` at the root of the directory you publish, not inside a subdirectory. The directory's contents become the site root. For example, publish `my-site/` where `my-site/index.html` exists — don't publish a parent folder that contains `my-site/`.
 
 You can also publish raw files without any HTML. Single files get a rich auto-viewer (images, PDF, video, audio). Multiple files get an auto-generated directory listing with folder navigation and an image gallery.
+
+**WebAssembly builds** (Emscripten, Rust, Godot, Unity, Pyodide, WebLLM, ...) publish like any folder: point the script at the build output directory and it runs, with `.wasm` served and compressed correctly. If the build uses threads (SharedArrayBuffer: Emscripten `-pthread`, Godot with Thread Support on, Unity multithreading), pass `--cross-origin-isolation`; single-threaded builds need nothing. A `publish_result.warning=` line mentioning WebAssembly means the Site has `.wasm` but the setting is off. Details and trade-offs: https://here.now/docs#wasm
 
 ## Update an existing site
 
@@ -284,6 +286,7 @@ For published sites:
 - Always share the `siteUrl` from the current script run.
 - Put the site URL on its own line with nothing else on that line — no punctuation, dashes, or status text after it (chat clients autolink everything up to whitespace, gluing your words into the URL). Status details like "permanent, saved to your account" go on the following line.
 - Read and follow `publish_result.*` lines from script stderr to determine auth mode.
+- `publish_result.warning=` lines are non-fatal: the Site is live, but something needs attention (an invalid `.herenow/proxy.json`, or a `.wasm` build published without `--cross-origin-isolation`). Act on them or tell the user.
 - When `publish_result.account_url` is non-empty (workspace publishes), share it as the primary team URL alongside `siteUrl`.
 - When `publish_result.primary_url` is non-empty, share it first; `siteUrl` stays valid.
 - When `publish_result.folder` is non-empty, mention that the Site is filed in that folder in their dashboard.
@@ -314,6 +317,7 @@ For Drives:
 | `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
 | `--api-key {key}`      | API key override (prefer credentials file)    |
 | `--spa`                | Enable SPA routing (serve index.html for unknown paths) |
+| `--cross-origin-isolation` | Send COOP/COEP headers so threaded WebAssembly (SharedArrayBuffer) runs; see https://here.now/docs#wasm |
 
 ## Beyond publish.sh
 
