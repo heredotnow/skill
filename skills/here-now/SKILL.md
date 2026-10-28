@@ -18,7 +18,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.33.0**
+**Skill version: 1.34.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -228,22 +228,26 @@ Never commit credentials or local state files (`~/.herenow/credentials`, `.heren
 To upgrade from anonymous (24h) to permanent sites:
 
 1. Ask the user for their email address.
-2. Request a one-time sign-in code:
+2. Request a one-time sign-in code. Send `X-HereNow-Client` with the same platform name you pass as `--client` (see "Client attribution"): the code email names your platform, and the account is attributed to it.
 
 ```bash
 curl -sS https://here.now/api/auth/agent/request-code \
   -H "content-type: application/json" \
+  -H "X-HereNow-Client: claude-code" \
   -d '{"email": "user@example.com"}'
 ```
 
 3. Tell the user: "Check your inbox for a sign-in code from here.now and paste it here."
-4. Verify the code and get the API key:
+4. Verify the code and get the API key, with the same header:
 
 ```bash
 curl -sS https://here.now/api/auth/agent/verify-code \
   -H "content-type: application/json" \
+  -H "X-HereNow-Client: claude-code" \
   -d '{"email":"user@example.com","code":"ABCD-2345"}'
 ```
+
+If you cannot set headers, pass the same value as `"client"` in the JSON body of either call.
 
 5. Save the returned `apiKey` yourself (do not ask the user to do this):
 
