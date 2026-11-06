@@ -14,7 +14,7 @@ description: >
   "put this in our company workspace". Agents can also buy a domain for a
   Site through here.now (no markup, DNS and SSL automatic) — use when asked
   to "buy a domain", "get me a .com for this", or "register a domain".
-version: 1.35.0
+version: 1.35.1
 author: here.now
 license: MIT
 prerequisites:
@@ -29,7 +29,7 @@ metadata:
 
 # here.now
 
-**Skill version: 1.35.0**
+**Skill version: 1.35.1**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
