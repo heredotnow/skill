@@ -18,7 +18,7 @@ description: >
 
 # here.now
 
-**Skill version: 1.34.0**
+**Skill version: 1.35.0**
 
 here.now lets agents publish websites and files to live URLs in seconds.
 
@@ -118,9 +118,16 @@ You can also publish raw files without any HTML. Single files get a rich auto-vi
 ./scripts/publish.sh {file-or-dir} --slug {slug}
 ```
 
-The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
+The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override; a token passed this way is saved to the state file, so later updates of that slug from the same directory need no flag.
 
 Authenticated updates require a saved API key.
+
+**Sites the user created at here.new.** Visiting https://here.new creates an empty here.now Site on the spot and shows the user a prompt to paste into you. That prompt names the Site's address (`https://{slug}.here.now/`) and, for an anonymous Site, its claim token; a signed-in user's Site is already in their account and the prompt says so. The Site exists, so **do not create a new one**: build what the user asks for and publish it as an update to that slug.
+
+- Anonymous: `./scripts/publish.sh {dir} --slug {slug} --claim-token {token}`. No API key is needed or used. The Site expires 24 hours after it was created unless claimed; when you are done, give the user the claim link from their prompt (`https://here.now/c/{token}`), copied byte-for-byte.
+- In the user's account: `./scripts/publish.sh {dir} --slug {slug}` with their API key (run the sign-in flow below first if none is saved).
+
+Until you publish, the address serves a placeholder page that says it is waiting for an agent; the user's browser tab refreshes into the real site on its own after your first publish.
 
 **Stale-base protection.** The live Site may have changed since your local files were published — the owner can edit it from other tools (another agent, the here.now Editor, a teammate). The script records the live `versionId` in `.herenow/state.json` after each publish and sends it as `baseVersionId` on the next update of the same slug from the same directory; if the live Site moved past it, the update is rejected with `code: "version_conflict"` naming the live version and what created it. When that happens, relay the message to the user and offer to (a) read the live files with `GET /api/v1/publish/{slug}/files` (lists them with a `url` each) and `GET /api/v1/publish/{slug}/files/{path}` (the bytes; owner API key, works for password-protected and restricted Sites without the visitor password), reconcile them into the local files, and republish, or (b) re-run with `--overwrite` to replace the live version anyway. Before editing local files for an authenticated Site you haven't touched recently, check for drift first: `GET /api/v1/publish/{slug}` returns `currentVersionId` plus `currentVersionSource` and `currentVersionCreatedAt` (what changed it and when, e.g. `editor`) — if the id differs from your state file's `versionId`, read the live files before editing. The published version is the shared truth; never fetch the public URL to read an owned Site (it is gated for protected Sites) and never ask the user for a visitor password to read their own Site. Anonymous Sites can't call these endpoints; they rely on the saved state and server enforcement. Omitting `baseVersionId` (or using `--overwrite`) is an unchecked full replacement — today's default for raw API callers.
 
