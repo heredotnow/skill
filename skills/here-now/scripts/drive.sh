@@ -75,11 +75,17 @@ if [[ -z "$API_KEY" && -z "$DRIVE_TOKEN" && -f "$CREDENTIALS_FILE" ]]; then
 fi
 
 BASE_URL="${BASE_URL%/}"
-if [[ "$BASE_URL" != "https://here.now" && "$ALLOW_NON_HERENOW_BASE_URL" -ne 1 ]]; then
-  if [[ -n "$API_KEY" || -n "$DRIVE_TOKEN" ]]; then
-    die "refusing to send credentials to non-default base URL; pass --allow-nonherenow-base-url to override"
-  fi
-fi
+# https://api.here.now is the same API reached through Cloudflare, for
+# networks that cannot connect to https://here.now directly; it is the only
+# other host credentials may go to without the override.
+case "$BASE_URL" in
+  https://here.now|https://api.here.now) ;;
+  *)
+    if [[ "$ALLOW_NON_HERENOW_BASE_URL" -ne 1 && ( -n "$API_KEY" || -n "$DRIVE_TOKEN" ) ]]; then
+      die "refusing to send credentials to non-default base URL; pass --allow-nonherenow-base-url to override"
+    fi
+    ;;
+esac
 
 auth_header=()
 if [[ -n "$DRIVE_TOKEN" ]]; then

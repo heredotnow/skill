@@ -82,6 +82,7 @@ If the docs fetch fails or times out, continue with the local skill and live API
 
 - Required binaries: `curl`, `file`, `jq`
 - Required network access: `https://here.now` (API) and `https://*.r2.cloudflarestorage.com` (file uploads PUT directly to storage; the exact host is in each upload URL). In a sandbox or behind a proxy with an egress allowlist, allow BOTH hosts. With only `here.now` allowed, the create call succeeds, every upload fails, and finalize reports missing files.
+- If `https://here.now` cannot be reached from where you run (connections time out while other sites load; some hosting providers block the address range it resolves to), the same API is at `https://api.here.now`. Pass `--base-url https://api.here.now` to `publish.sh` and `drive.sh`; both accept it without any override flag. Nothing else changes: Sites still serve at `{slug}.here.now`, and the key, state file and output are the same.
 - Optional environment variable: `$HERENOW_API_KEY`
 - Optional Drive token variable: `$HERENOW_DRIVE_TOKEN`
 - Optional credentials file: `~/.herenow/credentials`
@@ -108,7 +109,7 @@ bash "$PUBLISH" {file-or-dir} --client hermes
 
 Outputs the live URL (e.g. `https://bright-canvas-a7k2.here.now/`).
 
-Under the hood this is a three-step flow: create/update -> upload files -> finalize. A site is not live until finalize succeeds.
+Under the hood this is a three-step flow: create/update -> upload files -> finalize. A site is not live until finalize succeeds. Finalize for a large Site can take minutes; if a proxy cuts the connection first or the server reports the finalize still running, the script repeats the same finalize call (it is idempotent) until it gets a real answer, for up to 15 minutes (`HERENOW_FINALIZE_WAIT_SECONDS`). It exits 1 with `publish_result.finalize=timeout` only when that budget runs out, and the Site may still go live afterwards; the message shows the call that checks.
 
 Without an API key this creates an **anonymous site** that expires in 24 hours.
 With a saved API key, the site is permanent.
@@ -317,8 +318,8 @@ For Drives:
 | `--folder {name-or-id}` | File the Site in a dashboard folder (a name is created if missing; authenticated only) |
 | `--ttl {seconds}`      | Set expiry (authenticated only)               |
 | `--client {name}`      | Agent harness for attribution — the platform you run in (`hermes` here), not your bot/persona name; optionally append it: `hermes/research-bot` |
-| `--base-url {url}`     | API base URL (default: `https://here.now`)    |
-| `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
+| `--base-url {url}`     | API base URL (default: `https://here.now`; `https://api.here.now` is the same API via Cloudflare for networks that cannot reach the default) |
+| `--allow-nonherenow-base-url` | Allow sending auth to a `--base-url` other than the two above |
 | `--api-key {key}`      | API key override (prefer credentials file)    |
 | `--spa`                | Enable SPA routing (serve index.html for unknown paths) |
 | `--cross-origin-isolation` | Send COOP/COEP headers so threaded WebAssembly (SharedArrayBuffer) runs; see https://here.now/docs#wasm |

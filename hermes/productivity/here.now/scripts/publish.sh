@@ -144,9 +144,17 @@ if [[ -n "$FOLDER" ]]; then
 fi
 
 # Safety guard: avoid accidentally sending bearer auth to arbitrary endpoints.
-if [[ -n "$API_KEY" && "$BASE_URL" != "https://here.now" && "$ALLOW_NON_HERENOW_BASE_URL" -ne 1 ]]; then
-  die "refusing to send API key to non-default base URL; pass --allow-nonherenow-base-url to override"
-fi
+# https://api.here.now is the same API reached through Cloudflare, for
+# networks that cannot connect to https://here.now directly; it is the only
+# other host the key may go to without the override.
+case "$BASE_URL" in
+  https://here.now|https://api.here.now) ;;
+  *)
+    if [[ -n "$API_KEY" && "$ALLOW_NON_HERENOW_BASE_URL" -ne 1 ]]; then
+      die "refusing to send API key to non-default base URL; pass --allow-nonherenow-base-url to override"
+    fi
+    ;;
+esac
 
 # Auto-load claim token from state file for slug updates (server uses it only for
 # anonymous sites; harmless when an API key is also present).
@@ -463,14 +471,68 @@ if [[ "$upload_errors" -gt 0 ]]; then
   die "$upload_errors file(s) failed to upload"
 fi
 
-# Step 3: Finalize
+# Step 3: Finalize. The server makes this call idempotent: while the first
+# attempt is still running, a repeat answers 409 finalize_in_flight with
+# retryAfter; once it has completed, a repeat with the same versionId
+# answers the live result (replayed:true). So when no real answer arrives
+# (a proxy's gateway timeout, e.g. a 524 with an HTML body after about two
+# minutes behind Cloudflare, which a large Site's copy-forward can exceed;
+# or a dropped connection), or the server asks for a retry, repeat the same
+# call until it answers or the wait budget ends. Running out of budget does
+# not mean the finalize failed: it keeps running on the server.
+FINALIZE_WAIT_SECONDS="${HERENOW_FINALIZE_WAIT_SECONDS:-900}"
+finalize_deadline=$((SECONDS + FINALIZE_WAIT_SECONDS))
 echo "finalizing..." >&2
-FIN_RESPONSE=$(curl -sS -X POST "$FINALIZE_URL" \
-  "${AUTH_ARGS[@]+"${AUTH_ARGS[@]}"}" \
-  "${CLIENT_ARGS[@]+"${CLIENT_ARGS[@]}"}" \
-  "${ACCOUNT_ARGS[@]+"${ACCOUNT_ARGS[@]}"}" \
-  -H "content-type: application/json" \
-  -d "{\"versionId\":\"$VERSION_ID\"}")
+while :; do
+  # `|| ...000`: a connection-level failure exits curl non-zero, which under
+  # set -e would end the script here; treat it like a missing answer.
+  fin_out=$(curl -sS -w $'\n%{http_code}' -X POST "$FINALIZE_URL" \
+    "${AUTH_ARGS[@]+"${AUTH_ARGS[@]}"}" \
+    "${CLIENT_ARGS[@]+"${CLIENT_ARGS[@]}"}" \
+    "${ACCOUNT_ARGS[@]+"${ACCOUNT_ARGS[@]}"}" \
+    -H "content-type: application/json" \
+    -d "{\"versionId\":\"$VERSION_ID\"}") || fin_out=$'\n000'
+  fin_http_code="${fin_out##*$'\n'}"
+  FIN_RESPONSE="${fin_out%$'\n'*}"
+
+  fin_is_json=0
+  echo "$FIN_RESPONSE" | "$JQ_BIN" -e 'type == "object"' >/dev/null 2>&1 && fin_is_json=1
+  fin_code=""
+  fin_retry_after=""
+  if [[ "$fin_is_json" -eq 1 ]]; then
+    fin_code=$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.code // empty')
+    fin_retry_after=$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.retry_after // empty')
+  fi
+
+  if [[ "$fin_is_json" -eq 1 && "$fin_http_code" == 2* ]]; then
+    break
+  elif [[ "$fin_code" == "finalize_in_flight" ]]; then
+    fin_reason="still running on the server"
+  elif [[ "$fin_is_json" -eq 1 && "$fin_http_code" == 5* && -n "$fin_retry_after" ]]; then
+    fin_reason="server asked for a retry (HTTP $fin_http_code)"
+  elif [[ "$fin_is_json" -eq 0 && ( "$fin_http_code" == 5* || "$fin_http_code" == "000" ) ]]; then
+    fin_reason="no answer (HTTP $fin_http_code: a proxy timeout or dropped connection; the finalize keeps running on the server)"
+  else
+    break
+  fi
+
+  [[ "$fin_retry_after" =~ ^[0-9]+$ ]] || fin_retry_after=10
+  if (( SECONDS + fin_retry_after > finalize_deadline )); then
+    echo "error: finalize did not answer within ${FINALIZE_WAIT_SECONDS}s ($fin_reason)." >&2
+    echo "It may still complete on the server. To check, repeat the same finalize call:" >&2
+    echo "  curl -sS -X POST $FINALIZE_URL -H 'content-type: application/json' -d '{\"versionId\":\"$VERSION_ID\"}'" >&2
+    echo "  (with your Authorization header for an account Site). A JSON answer with currentVersionId means it is live." >&2
+    echo "Set HERENOW_FINALIZE_WAIT_SECONDS to wait longer next time." >&2
+    echo "publish_result.finalize=timeout" >&2
+    exit 1
+  fi
+  echo "finalize: $fin_reason; retrying in ${fin_retry_after}s..." >&2
+  sleep "$fin_retry_after"
+done
+
+if [[ "$fin_is_json" -eq 0 ]]; then
+  die "finalize failed: unexpected response (HTTP $fin_http_code): $(echo "$FIN_RESPONSE" | tr -d '\r' | head -c 200)"
+fi
 
 if echo "$FIN_RESPONSE" | "$JQ_BIN" -e '.error' >/dev/null 2>&1; then
   if [[ "$(echo "$FIN_RESPONSE" | "$JQ_BIN" -r '.code // empty')" == "version_conflict" ]]; then
